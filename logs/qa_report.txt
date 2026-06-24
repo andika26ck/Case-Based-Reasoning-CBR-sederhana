@@ -1,0 +1,99 @@
+=== QA / SANITY-CHECK HASIL TAHAP 1 (Membangun Case Base) ===
+Domain: Perdata - Perbuatan Melawan Hukum (PMH) | Pengadilan: PN Bandung
+
+==============================================================================
+1. JUMLAH DOKUMEN
+==============================================================================
+Domain         : Perdata - Perbuatan Melawan Hukum (PMH)
+Pengadilan     : PN Bandung
+Total baris di metadata_raw.csv : 131
+Dokumen valid (>=100 kata & keutuhan>=50%) : 90
+Dokumen tidak valid                                        : 41
+[OK] Jumlah dokumen valid (90) >= target scraping (90).
+
+==============================================================================
+2. KONSISTENSI ANTAR FOLDER
+==============================================================================
+case_id di metadata        : 131
+file di data/raw              : 91
+file di data/raw_extracted    : 91
+file di data/tokens           : 91
+file di data/pdf              : 91
+[OK] Semua dokumen valid punya file .txt di data/raw.
+[OK] Semua dokumen valid punya file token di data/tokens.
+[OK] Semua dokumen valid punya arsip PDF.
+
+==============================================================================
+3. DISTRIBUSI PANJANG DOKUMEN (JUMLAH KATA)
+==============================================================================
+Rata-rata jumlah kata : 9170
+Median                : 4789
+Minimum               : 0
+Maksimum              : 52546
+Std deviasi           : 10975
+[WARN] 40 dokumen dengan 0 kata (gagal ekstrak/download). case_id: ['case_zaf0f51b00e011cea313313634313137', 'case_zaf0f51d844733108b17313635393137', 'case_zaf0f51d7df40f388acf313635393036', 'case_zaf0f51d728e8b96b20a313635383437', 'case_zaf0f51d709224ceacfb313635383433', 'case_zaf0f51d6e8e0c749cb8313635383430', 'case_zaf0f51d66fc489aadc3313635383237', 'case_zaf0f51d64d0974cb505313635383234', 'case_zaf0f51b07a79c208990313634313238', 'case_zaf0f51aebbe1c1eae92313634303432']
+
+==============================================================================
+4. DISTRIBUSI SKOR KEUTUHAN TEKS (VALIDASI >=80%)
+==============================================================================
+Rata-rata keutuhan : 64.1%
+Median             : 91.1%
+Minimum            : 0.0%
+[INFO] 1 dokumen di bawah ambang keutuhan 50% (otomatis ditandai tidak valid, kemungkinan proses cleaning kebablasan atau PDF aslinya memang banyak watermark/noise).
+
+==============================================================================
+5. DUPLIKASI NOMOR PERKARA
+==============================================================================
+[OK] Tidak ada duplikasi nomor perkara.
+
+==============================================================================
+6. KELENGKAPAN METADATA
+==============================================================================
+[OK] kolom 'no_perkara': 0/131 (0%) kosong
+[OK] kolom 'tanggal_register': 0/131 (0%) kosong
+[OK] kolom 'klasifikasi': 0/131 (0%) kosong
+[OK] kolom 'amar': 0/131 (0%) kosong
+[OK] kolom 'hakim_ketua': 0/131 (0%) kosong
+[OK] kolom 'judul': 0/131 (0%) kosong
+
+==============================================================================
+7. KONSISTENSI DOMAIN / JENIS PERKARA
+==============================================================================
+Distribusi jenis_perkara di metadata:
+  - 'Perdata - Perbuatan Melawan Hukum (PMH)': 131 dokumen
+[OK] Semua record sudah menggunakan domain baru: 'Perdata - Perbuatan Melawan Hukum (PMH)'.
+
+==============================================================================
+8. SAMPLE ACAK (5 DOKUMEN) UNTUK DIBACA MANUAL
+==============================================================================
+
+--- case_zaf16892e23be89c9b2f313531393039 ---
+  panjang: 1021 kata
+  cuplikan awal: putusan.mahkamahagung.go.id  mahkamah agung republik indonesia mahkamah agung republik indonesia mahkamah agung republik indonesia mahkamah agung republik indonesia mahkamah agung republik indonesia        dari 4 penetapan nomor 143/pdt.g/2026/pn bdg p e n e t a p a n nomor 143/pdt.g/2026/pn bdg dem...
+
+--- case_zaf108a6aba2af388ffc313333383536 ---
+  panjang: 11790 kata
+  cuplikan awal: putusan.mahkamahagung.go.id  mahkamah agung republik indonesia mahkamah agung republik indonesia mahkamah agung republik indonesia mahkamah agung republik indonesia mahkamah agung republik indonesia        dari 39 putusan perdata gugatan nomor 467/pdt.g/2025/pn bdg p u t u s a n nomor 467/pdt.g/2025...
+
+--- case_zaf154c6348086669d36313033363038 ---
+  panjang: 30366 kata
+  cuplikan awal: putusan.mahkamahagung.go.id  mahkamah agung republik indonesia mahkamah agung republik indonesia mahkamah agung republik indonesia mahkamah agung republik indonesia mahkamah agung republik indonesia        putusan nomor 500/pdt.g/2025/pn bdg p u t u s a n nomor 500/pdt.g/2025/pn bdg demi keadilan be...
+
+--- case_zaf16892e9b030a699c9313531393232 ---
+  panjang: 17848 kata
+  cuplikan awal: putusan.mahkamahagung.go.id  mahkamah agung republik indonesia mahkamah agung republik indonesia mahkamah agung republik indonesia mahkamah agung republik indonesia mahkamah agung republik indonesia        dari 57 putusan nomor 583/pdt.g/2023/pn bdg p u t u s a n nomor 583/pdt.g/2023/pn bdg demi kea...
+
+--- case_zaf1485a6314b13ca232313531343037 ---
+  panjang: 31333 kata
+  cuplikan awal: putusan.mahkamahagung.go.id  mahkamah agung republik indonesia mahkamah agung republik indonesia mahkamah agung republik indonesia mahkamah agung republik indonesia mahkamah agung republik indonesia        dari 96 putusan perdata gugatan nomor 474/pdt.g/2025/pn bdg p u t u s a n nomor 474/pdt.g/2025...
+
+[ACTION REQUIRED] Baca ulang cuplikan di atas secara manual:
+  - Apakah masih ada header/footer/watermark yang ketinggalan?
+  - Apakah isi teks relevan dengan domain PMH (Perbuatan Melawan Hukum)?
+  - Apakah ada karakter aneh/rusak akibat OCR atau ekstraksi PDF?
+
+==============================================================================
+KESIMPULAN
+==============================================================================
+[STATUS] Tahap 1 tampak siap dilanjutkan ke Tahap 2 (Case Representation).
+         Tetap disarankan baca beberapa sample di atas secara manual sebelum lanjut.

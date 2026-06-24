@@ -1,0 +1,6 @@
+requests>=2.31
+undetected-chromedriver>=3.5
+beautifulsoup4>=4.12
+lxml>=5.0
+pdfminer.six>=20231228
+pandas>=2.0
