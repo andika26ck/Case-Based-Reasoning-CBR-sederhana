@@ -1,0 +1,147 @@
+2026-06-24 19:44:38,509 | INFO | ================================================================================
+2026-06-24 19:44:38,509 | INFO | Tahap 2: Case Representation - START
+2026-06-24 19:44:38,509 | INFO | ================================================================================
+2026-06-24 19:44:38,519 | INFO | Metadata loaded: 131 kasus
+2026-06-24 19:44:40,756 | WARNING | Case file not found: data/raw\case_zaf0f51b00e011cea313313634313137.txt
+2026-06-24 19:44:40,757 | WARNING | Case file not found: data/raw\case_zaf0f51d844733108b17313635393137.txt
+2026-06-24 19:44:40,757 | WARNING | Case file not found: data/raw\case_zaf0f51d7df40f388acf313635393036.txt
+2026-06-24 19:44:40,757 | WARNING | Case file not found: data/raw\case_zaf0f51d728e8b96b20a313635383437.txt
+2026-06-24 19:44:40,757 | WARNING | Case file not found: data/raw\case_zaf0f51d709224ceacfb313635383433.txt
+2026-06-24 19:44:40,758 | WARNING | Case file not found: data/raw\case_zaf0f51d6e8e0c749cb8313635383430.txt
+2026-06-24 19:44:40,758 | WARNING | Case file not found: data/raw\case_zaf0f51d66fc489aadc3313635383237.txt
+2026-06-24 19:44:40,758 | WARNING | Case file not found: data/raw\case_zaf0f51d64d0974cb505313635383234.txt
+2026-06-24 19:44:40,758 | WARNING | Case file not found: data/raw\case_zaf0f51b07a79c208990313634313238.txt
+2026-06-24 19:44:40,758 | WARNING | Case file not found: data/raw\case_zaf0f51aebbe1c1eae92313634303432.txt
+2026-06-24 19:44:40,758 | WARNING | Case file not found: data/raw\case_52fb7cb38e12389652f01cf07296f656.txt
+2026-06-24 19:44:40,758 | WARNING | Case file not found: data/raw\case_zaf0f51ae04716ec92b9313634303232.txt
+2026-06-24 19:44:40,758 | WARNING | Case file not found: data/raw\case_zaf0f51ada3de0fa8a80313634303132.txt
+2026-06-24 19:44:40,758 | WARNING | Case file not found: data/raw\case_zaf0f51ad7c633b8a4e0313634303038.txt
+2026-06-24 19:44:40,759 | WARNING | Case file not found: data/raw\case_zaf0f1ef7cc79cc890c1313535323134.txt
+2026-06-24 19:44:40,759 | WARNING | Case file not found: data/raw\case_zaf162e995a82feeabcf313032343430.txt
+2026-06-24 19:44:40,759 | WARNING | Case file not found: data/raw\case_zaf162e984450fa6be66313032343131.txt
+2026-06-24 19:44:40,759 | WARNING | Case file not found: data/raw\case_zaf0f04b9371b6c0b51f313334363233.txt
+2026-06-24 19:44:40,759 | WARNING | Case file not found: data/raw\case_8e35462aeabbfa464724260501121ccf.txt
+2026-06-24 19:44:40,759 | WARNING | Case file not found: data/raw\case_6cc0a829e15775f650d7b058265fd0c7.txt
+2026-06-24 19:44:40,759 | WARNING | Case file not found: data/raw\case_zaf0f7715fc4c4a28c2c313630343335.txt
+2026-06-24 19:44:40,759 | WARNING | Case file not found: data/raw\case_d36e4d0d0a7b554f4c597617288e524e.txt
+2026-06-24 19:44:40,759 | WARNING | Case file not found: data/raw\case_zaf111e4d8737bf4a25b303735363430.txt
+2026-06-24 19:44:40,759 | WARNING | Case file not found: data/raw\case_zaf111e4d68af736bd88303735363337.txt
+2026-06-24 19:44:40,760 | WARNING | Case file not found: data/raw\case_zaf111e4b730ce88a02b303735353434.txt
+2026-06-24 19:44:40,760 | WARNING | Case file not found: data/raw\case_bcfc4a90badac04de14b9be2da040fcf.txt
+2026-06-24 19:44:40,760 | WARNING | Case file not found: data/raw\case_zaed8755f2403bac9293313535313132.txt
+2026-06-24 19:44:40,760 | WARNING | Case file not found: data/raw\case_8b6f781cb5931fb092a2a901737ad583.txt
+2026-06-24 19:44:40,760 | WARNING | Case file not found: data/raw\case_zaee0e5efcee7d8aa8c8313230363032.txt
+2026-06-24 19:44:40,760 | WARNING | Case file not found: data/raw\case_6ef79d3dd076d87149cdb2c2b398e1c0.txt
+2026-06-24 19:44:40,760 | WARNING | Case file not found: data/raw\case_90692417bc12f58c5e9bc01e76c68716.txt
+2026-06-24 19:44:40,760 | WARNING | Case file not found: data/raw\case_zaed6ad84918de9c8802303934313039.txt
+2026-06-24 19:44:40,760 | WARNING | Case file not found: data/raw\case_zaee0e42a7e27542ae00303834333134.txt
+2026-06-24 19:44:40,760 | WARNING | Case file not found: data/raw\case_536cc190207bb7934be88d729c5e2eba.txt
+2026-06-24 19:44:40,760 | WARNING | Case file not found: data/raw\case_e190c2f0abe9f64e93399718551484a1.txt
+2026-06-24 19:44:40,761 | WARNING | Case file not found: data/raw\case_zaee0b18b974dc6e965e303830353331.txt
+2026-06-24 19:44:40,761 | WARNING | Case file not found: data/raw\case_fc302956c2c1ff396493de72ceb52f4b.txt
+2026-06-24 19:44:40,761 | WARNING | Case file not found: data/raw\case_e1e76e932f193cc37b4d91882bd29a19.txt
+2026-06-24 19:44:40,761 | WARNING | Case file not found: data/raw\case_7e37734ca8cbc08a197bf12af0e5b047.txt
+2026-06-24 19:44:40,761 | WARNING | Case file not found: data/raw\case_25f8c319e999558f1aa280d9cc1f1f5b.txt
+2026-06-24 19:44:40,769 | INFO | Cases representation saved to data/processed/cases.csv
+2026-06-24 19:44:40,773 | INFO | Cases representation saved to data/processed/cases.json
+2026-06-24 19:44:40,775 | INFO | ================================================================================
+2026-06-24 19:44:40,775 | INFO | Tahap 2: Case Representation - COMPLETED
+2026-06-24 19:44:40,775 | INFO | ================================================================================
+2026-06-24 19:48:08,923 | INFO | ================================================================================
+2026-06-24 19:48:08,924 | INFO | Tahap 2: Case Representation - START
+2026-06-24 19:48:08,924 | INFO | ================================================================================
+2026-06-24 19:48:08,934 | INFO | Metadata loaded: 131 kasus
+2026-06-24 19:48:11,615 | WARNING | Case file not found: data/raw\case_zaf0f51b00e011cea313313634313137.txt
+2026-06-24 19:48:11,615 | WARNING | Case file not found: data/raw\case_zaf0f51d844733108b17313635393137.txt
+2026-06-24 19:48:11,615 | WARNING | Case file not found: data/raw\case_zaf0f51d7df40f388acf313635393036.txt
+2026-06-24 19:48:11,615 | WARNING | Case file not found: data/raw\case_zaf0f51d728e8b96b20a313635383437.txt
+2026-06-24 19:48:11,615 | WARNING | Case file not found: data/raw\case_zaf0f51d709224ceacfb313635383433.txt
+2026-06-24 19:48:11,615 | WARNING | Case file not found: data/raw\case_zaf0f51d6e8e0c749cb8313635383430.txt
+2026-06-24 19:48:11,615 | WARNING | Case file not found: data/raw\case_zaf0f51d66fc489aadc3313635383237.txt
+2026-06-24 19:48:11,615 | WARNING | Case file not found: data/raw\case_zaf0f51d64d0974cb505313635383234.txt
+2026-06-24 19:48:11,616 | WARNING | Case file not found: data/raw\case_zaf0f51b07a79c208990313634313238.txt
+2026-06-24 19:48:11,616 | WARNING | Case file not found: data/raw\case_zaf0f51aebbe1c1eae92313634303432.txt
+2026-06-24 19:48:11,616 | WARNING | Case file not found: data/raw\case_52fb7cb38e12389652f01cf07296f656.txt
+2026-06-24 19:48:11,616 | WARNING | Case file not found: data/raw\case_zaf0f51ae04716ec92b9313634303232.txt
+2026-06-24 19:48:11,616 | WARNING | Case file not found: data/raw\case_zaf0f51ada3de0fa8a80313634303132.txt
+2026-06-24 19:48:11,616 | WARNING | Case file not found: data/raw\case_zaf0f51ad7c633b8a4e0313634303038.txt
+2026-06-24 19:48:11,616 | WARNING | Case file not found: data/raw\case_zaf0f1ef7cc79cc890c1313535323134.txt
+2026-06-24 19:48:11,617 | WARNING | Case file not found: data/raw\case_zaf162e995a82feeabcf313032343430.txt
+2026-06-24 19:48:11,617 | WARNING | Case file not found: data/raw\case_zaf162e984450fa6be66313032343131.txt
+2026-06-24 19:48:11,617 | WARNING | Case file not found: data/raw\case_zaf0f04b9371b6c0b51f313334363233.txt
+2026-06-24 19:48:11,617 | WARNING | Case file not found: data/raw\case_8e35462aeabbfa464724260501121ccf.txt
+2026-06-24 19:48:11,617 | WARNING | Case file not found: data/raw\case_6cc0a829e15775f650d7b058265fd0c7.txt
+2026-06-24 19:48:11,617 | WARNING | Case file not found: data/raw\case_zaf0f7715fc4c4a28c2c313630343335.txt
+2026-06-24 19:48:11,617 | WARNING | Case file not found: data/raw\case_d36e4d0d0a7b554f4c597617288e524e.txt
+2026-06-24 19:48:11,617 | WARNING | Case file not found: data/raw\case_zaf111e4d8737bf4a25b303735363430.txt
+2026-06-24 19:48:11,618 | WARNING | Case file not found: data/raw\case_zaf111e4d68af736bd88303735363337.txt
+2026-06-24 19:48:11,618 | WARNING | Case file not found: data/raw\case_zaf111e4b730ce88a02b303735353434.txt
+2026-06-24 19:48:11,618 | WARNING | Case file not found: data/raw\case_bcfc4a90badac04de14b9be2da040fcf.txt
+2026-06-24 19:48:11,618 | WARNING | Case file not found: data/raw\case_zaed8755f2403bac9293313535313132.txt
+2026-06-24 19:48:11,618 | WARNING | Case file not found: data/raw\case_8b6f781cb5931fb092a2a901737ad583.txt
+2026-06-24 19:48:11,618 | WARNING | Case file not found: data/raw\case_zaee0e5efcee7d8aa8c8313230363032.txt
+2026-06-24 19:48:11,619 | WARNING | Case file not found: data/raw\case_6ef79d3dd076d87149cdb2c2b398e1c0.txt
+2026-06-24 19:48:11,619 | WARNING | Case file not found: data/raw\case_90692417bc12f58c5e9bc01e76c68716.txt
+2026-06-24 19:48:11,619 | WARNING | Case file not found: data/raw\case_zaed6ad84918de9c8802303934313039.txt
+2026-06-24 19:48:11,619 | WARNING | Case file not found: data/raw\case_zaee0e42a7e27542ae00303834333134.txt
+2026-06-24 19:48:11,619 | WARNING | Case file not found: data/raw\case_536cc190207bb7934be88d729c5e2eba.txt
+2026-06-24 19:48:11,619 | WARNING | Case file not found: data/raw\case_e190c2f0abe9f64e93399718551484a1.txt
+2026-06-24 19:48:11,619 | WARNING | Case file not found: data/raw\case_zaee0b18b974dc6e965e303830353331.txt
+2026-06-24 19:48:11,619 | WARNING | Case file not found: data/raw\case_fc302956c2c1ff396493de72ceb52f4b.txt
+2026-06-24 19:48:11,619 | WARNING | Case file not found: data/raw\case_e1e76e932f193cc37b4d91882bd29a19.txt
+2026-06-24 19:48:11,619 | WARNING | Case file not found: data/raw\case_7e37734ca8cbc08a197bf12af0e5b047.txt
+2026-06-24 19:48:11,619 | WARNING | Case file not found: data/raw\case_25f8c319e999558f1aa280d9cc1f1f5b.txt
+2026-06-24 19:48:11,627 | INFO | Cases representation saved to data/processed/cases.csv
+2026-06-24 19:48:11,634 | INFO | Cases representation saved to data/processed/cases.json
+2026-06-24 19:48:11,638 | INFO | ================================================================================
+2026-06-24 19:48:11,638 | INFO | Tahap 2: Case Representation - COMPLETED
+2026-06-24 19:48:11,638 | INFO | ================================================================================
+2026-06-24 19:48:25,482 | INFO | ================================================================================
+2026-06-24 19:48:25,483 | INFO | Tahap 2: Case Representation - START
+2026-06-24 19:48:25,483 | INFO | ================================================================================
+2026-06-24 19:48:25,494 | INFO | Metadata loaded: 131 kasus
+2026-06-24 19:48:27,864 | WARNING | Case file not found: data/raw\case_zaf0f51b00e011cea313313634313137.txt
+2026-06-24 19:48:27,864 | WARNING | Case file not found: data/raw\case_zaf0f51d844733108b17313635393137.txt
+2026-06-24 19:48:27,864 | WARNING | Case file not found: data/raw\case_zaf0f51d7df40f388acf313635393036.txt
+2026-06-24 19:48:27,864 | WARNING | Case file not found: data/raw\case_zaf0f51d728e8b96b20a313635383437.txt
+2026-06-24 19:48:27,865 | WARNING | Case file not found: data/raw\case_zaf0f51d709224ceacfb313635383433.txt
+2026-06-24 19:48:27,865 | WARNING | Case file not found: data/raw\case_zaf0f51d6e8e0c749cb8313635383430.txt
+2026-06-24 19:48:27,865 | WARNING | Case file not found: data/raw\case_zaf0f51d66fc489aadc3313635383237.txt
+2026-06-24 19:48:27,865 | WARNING | Case file not found: data/raw\case_zaf0f51d64d0974cb505313635383234.txt
+2026-06-24 19:48:27,865 | WARNING | Case file not found: data/raw\case_zaf0f51b07a79c208990313634313238.txt
+2026-06-24 19:48:27,865 | WARNING | Case file not found: data/raw\case_zaf0f51aebbe1c1eae92313634303432.txt
+2026-06-24 19:48:27,866 | WARNING | Case file not found: data/raw\case_52fb7cb38e12389652f01cf07296f656.txt
+2026-06-24 19:48:27,866 | WARNING | Case file not found: data/raw\case_zaf0f51ae04716ec92b9313634303232.txt
+2026-06-24 19:48:27,866 | WARNING | Case file not found: data/raw\case_zaf0f51ada3de0fa8a80313634303132.txt
+2026-06-24 19:48:27,866 | WARNING | Case file not found: data/raw\case_zaf0f51ad7c633b8a4e0313634303038.txt
+2026-06-24 19:48:27,866 | WARNING | Case file not found: data/raw\case_zaf0f1ef7cc79cc890c1313535323134.txt
+2026-06-24 19:48:27,866 | WARNING | Case file not found: data/raw\case_zaf162e995a82feeabcf313032343430.txt
+2026-06-24 19:48:27,866 | WARNING | Case file not found: data/raw\case_zaf162e984450fa6be66313032343131.txt
+2026-06-24 19:48:27,866 | WARNING | Case file not found: data/raw\case_zaf0f04b9371b6c0b51f313334363233.txt
+2026-06-24 19:48:27,867 | WARNING | Case file not found: data/raw\case_8e35462aeabbfa464724260501121ccf.txt
+2026-06-24 19:48:27,867 | WARNING | Case file not found: data/raw\case_6cc0a829e15775f650d7b058265fd0c7.txt
+2026-06-24 19:48:27,867 | WARNING | Case file not found: data/raw\case_zaf0f7715fc4c4a28c2c313630343335.txt
+2026-06-24 19:48:27,867 | WARNING | Case file not found: data/raw\case_d36e4d0d0a7b554f4c597617288e524e.txt
+2026-06-24 19:48:27,867 | WARNING | Case file not found: data/raw\case_zaf111e4d8737bf4a25b303735363430.txt
+2026-06-24 19:48:27,867 | WARNING | Case file not found: data/raw\case_zaf111e4d68af736bd88303735363337.txt
+2026-06-24 19:48:27,867 | WARNING | Case file not found: data/raw\case_zaf111e4b730ce88a02b303735353434.txt
+2026-06-24 19:48:27,867 | WARNING | Case file not found: data/raw\case_bcfc4a90badac04de14b9be2da040fcf.txt
+2026-06-24 19:48:27,867 | WARNING | Case file not found: data/raw\case_zaed8755f2403bac9293313535313132.txt
+2026-06-24 19:48:27,867 | WARNING | Case file not found: data/raw\case_8b6f781cb5931fb092a2a901737ad583.txt
+2026-06-24 19:48:27,868 | WARNING | Case file not found: data/raw\case_zaee0e5efcee7d8aa8c8313230363032.txt
+2026-06-24 19:48:27,868 | WARNING | Case file not found: data/raw\case_6ef79d3dd076d87149cdb2c2b398e1c0.txt
+2026-06-24 19:48:27,868 | WARNING | Case file not found: data/raw\case_90692417bc12f58c5e9bc01e76c68716.txt
+2026-06-24 19:48:27,868 | WARNING | Case file not found: data/raw\case_zaed6ad84918de9c8802303934313039.txt
+2026-06-24 19:48:27,868 | WARNING | Case file not found: data/raw\case_zaee0e42a7e27542ae00303834333134.txt
+2026-06-24 19:48:27,868 | WARNING | Case file not found: data/raw\case_536cc190207bb7934be88d729c5e2eba.txt
+2026-06-24 19:48:27,868 | WARNING | Case file not found: data/raw\case_e190c2f0abe9f64e93399718551484a1.txt
+2026-06-24 19:48:27,868 | WARNING | Case file not found: data/raw\case_zaee0b18b974dc6e965e303830353331.txt
+2026-06-24 19:48:27,868 | WARNING | Case file not found: data/raw\case_fc302956c2c1ff396493de72ceb52f4b.txt
+2026-06-24 19:48:27,868 | WARNING | Case file not found: data/raw\case_e1e76e932f193cc37b4d91882bd29a19.txt
+2026-06-24 19:48:27,869 | WARNING | Case file not found: data/raw\case_7e37734ca8cbc08a197bf12af0e5b047.txt
+2026-06-24 19:48:27,869 | WARNING | Case file not found: data/raw\case_25f8c319e999558f1aa280d9cc1f1f5b.txt
+2026-06-24 19:48:27,878 | INFO | Cases representation saved to data/processed/cases.csv
+2026-06-24 19:48:27,884 | INFO | Cases representation saved to data/processed/cases.json
+2026-06-24 19:48:27,888 | INFO | ================================================================================
+2026-06-24 19:48:27,888 | INFO | Tahap 2: Case Representation - COMPLETED
+2026-06-24 19:48:27,888 | INFO | ================================================================================

@@ -1,0 +1,32 @@
+[
+  {
+    "query_id": "q1",
+    "query_text": "tentang duduk perkara",
+    "ground_truth_case_id": "case_zaf1485a6314b13ca232313531343037",
+    "ground_truth_no_perkara": "474/Pdt.G/2025/PN Bdg"
+  },
+  {
+    "query_id": "q2",
+    "query_text": "tentang duduk perkara",
+    "ground_truth_case_id": "case_zaf13c87d4ba94fc8740313430393131",
+    "ground_truth_no_perkara": "443/Pdt.G/2025/PN Bdg"
+  },
+  {
+    "query_id": "q3",
+    "query_text": "tentang duduk perkara",
+    "ground_truth_case_id": "case_zaf1532dc596e86a8911303935323237",
+    "ground_truth_no_perkara": "359/Pdt.G/2025/PN Bdg"
+  },
+  {
+    "query_id": "q4",
+    "query_text": "tentang duduk perkara",
+    "ground_truth_case_id": "case_zaf13c87acdb82d4a390313430383034",
+    "ground_truth_no_perkara": "64/Pdt.G/2025/PN Bdg"
+  },
+  {
+    "query_id": "q5",
+    "query_text": "tentang duduk perkara",
+    "ground_truth_case_id": "case_zaf0f5d617c52288b46e313530303331",
+    "ground_truth_no_perkara": "235/Pdt.G/2025/PN Bdg"
+  }
+]
