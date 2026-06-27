@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-06-24T20:24:21.882223",
+  "timestamp": "2026-06-25T20:40:27.512279",
   "approaches": {
     "tfidf": {
       "method": "TF-IDF + Cosine Similarity",
@@ -43,16 +43,16 @@
     ],
     "retrieved_top_3_bert": [
       {
-        "no_perkara": "327/Pdt.G/2025/PN Bdg",
-        "similarity_score": 1.0
+        "no_perkara": "57/Pdt.G/2025/PN Spt",
+        "similarity_score": 1.0000001192092896
       },
       {
-        "no_perkara": "405/Pdt.G/2025/PN Bdg",
-        "similarity_score": 1.0
+        "no_perkara": "390/Pdt.G/2025/PN Bdg",
+        "similarity_score": 1.0000001192092896
       },
       {
-        "no_perkara": "544/Pdt.G/2025/PN Bdg",
-        "similarity_score": 1.0
+        "no_perkara": "278/Pdt.G/2025/PN Bdg",
+        "similarity_score": 1.0000001192092896
       }
     ]
   }
