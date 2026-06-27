@@ -67,25 +67,25 @@ Distribusi jenis_perkara di metadata:
 8. SAMPLE ACAK (5 DOKUMEN) UNTUK DIBACA MANUAL
 ==============================================================================
 
---- case_zaf16892e23be89c9b2f313531393039 ---
-  panjang: 1021 kata
-  cuplikan awal: putusan.mahkamahagung.go.id  mahkamah agung republik indonesia mahkamah agung republik indonesia mahkamah agung republik indonesia mahkamah agung republik indonesia mahkamah agung republik indonesia        dari 4 penetapan nomor 143/pdt.g/2026/pn bdg p e n e t a p a n nomor 143/pdt.g/2026/pn bdg dem...
+--- case_zaf154c65c12b28a9b5e313033373135 ---
+  panjang: 880 kata
+  cuplikan awal: putusan.mahkamahagung.go.id  mahkamah agung republik indonesia mahkamah agung republik indonesia mahkamah agung republik indonesia mahkamah agung republik indonesia mahkamah agung republik indonesia        dari 4 penetapan nomor 37/pdt.g/2026/pn bdg p e n e t a p a n nomor 37/pdt.g/2026/pn bdg demi ...
 
---- case_zaf108a6aba2af388ffc313333383536 ---
-  panjang: 11790 kata
-  cuplikan awal: putusan.mahkamahagung.go.id  mahkamah agung republik indonesia mahkamah agung republik indonesia mahkamah agung republik indonesia mahkamah agung republik indonesia mahkamah agung republik indonesia        dari 39 putusan perdata gugatan nomor 467/pdt.g/2025/pn bdg p u t u s a n nomor 467/pdt.g/2025...
+--- case_zaf1535f6fc89c30b51e313534373538 ---
+  panjang: 11935 kata
+  cuplikan awal: putusan.mahkamahagung.go.id  mahkamah agung republik indonesia mahkamah agung republik indonesia mahkamah agung republik indonesia mahkamah agung republik indonesia mahkamah agung republik indonesia        dari 40 putusan perdata gugatan nomor 588/pdt.g/2025/pn bdg p u t u s a n nomor 588/pdt.g/2025...
 
---- case_zaf154c6348086669d36313033363038 ---
-  panjang: 30366 kata
-  cuplikan awal: putusan.mahkamahagung.go.id  mahkamah agung republik indonesia mahkamah agung republik indonesia mahkamah agung republik indonesia mahkamah agung republik indonesia mahkamah agung republik indonesia        putusan nomor 500/pdt.g/2025/pn bdg p u t u s a n nomor 500/pdt.g/2025/pn bdg demi keadilan be...
+--- case_zaf1420903a08656a7d8313431363330 ---
+  panjang: 18887 kata
+  cuplikan awal: putusan.mahkamahagung.go.id  mahkamah agung republik indonesia mahkamah agung republik indonesia mahkamah agung republik indonesia mahkamah agung republik indonesia mahkamah agung republik indonesia        dari 61 putusan perdata gugatan nomor 269/pdt.g/2025/pn bdg p u t u s a n nomor 269/pdt.g/2025...
 
---- case_zaf16892e9b030a699c9313531393232 ---
-  panjang: 17848 kata
-  cuplikan awal: putusan.mahkamahagung.go.id  mahkamah agung republik indonesia mahkamah agung republik indonesia mahkamah agung republik indonesia mahkamah agung republik indonesia mahkamah agung republik indonesia        dari 57 putusan nomor 583/pdt.g/2023/pn bdg p u t u s a n nomor 583/pdt.g/2023/pn bdg demi kea...
+--- case_zaf11383620a98bc91c7303932343033 ---
+  panjang: 12761 kata
+  cuplikan awal: putusan.mahkamahagung.go.id  mahkamah agung republik indonesia mahkamah agung republik indonesia mahkamah agung republik indonesia mahkamah agung republik indonesia mahkamah agung republik indonesia        dari 39 putusan perdata gugatan nomor 505/pdt.g/2025/pn bdg p u t u s a n nomor 505/pdt.g/2025...
 
---- case_zaf1485a6314b13ca232313531343037 ---
-  panjang: 31333 kata
-  cuplikan awal: putusan.mahkamahagung.go.id  mahkamah agung republik indonesia mahkamah agung republik indonesia mahkamah agung republik indonesia mahkamah agung republik indonesia mahkamah agung republik indonesia        dari 96 putusan perdata gugatan nomor 474/pdt.g/2025/pn bdg p u t u s a n nomor 474/pdt.g/2025...
+--- case_zaf0f7713c1f40909a59313630333336 ---
+  panjang: 1203 kata
+  cuplikan awal: putusan.mahkamahagung.go.id  mahkamah agung republik indonesia mahkamah agung republik indonesia mahkamah agung republik indonesia mahkamah agung republik indonesia mahkamah agung republik indonesia        hal 1 penetapan pencabutan no.362/pdt.g/2025/pn bdg p e n e t a p a n nomor 362/pdt.g/2025/pn ...
 
 [ACTION REQUIRED] Baca ulang cuplikan di atas secara manual:
   - Apakah masih ada header/footer/watermark yang ketinggalan?

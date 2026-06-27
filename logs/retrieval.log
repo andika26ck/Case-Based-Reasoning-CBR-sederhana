@@ -1,0 +1,227 @@
+2026-06-27 16:11:27,658 | INFO | === TAHAP 3: Case Retrieval ===
+2026-06-27 16:11:27,659 | INFO | Domain: Perdata - Perbuatan Melawan Hukum (PMH) | Pengadilan: PN Bandung
+2026-06-27 16:11:27,704 | INFO | Total kasus dimuat: 90
+2026-06-27 16:11:56,283 | INFO | === TAHAP 3: Case Retrieval ===
+2026-06-27 16:11:56,283 | INFO | Domain: Perdata - Perbuatan Melawan Hukum (PMH) | Pengadilan: PN Bandung
+2026-06-27 16:11:56,306 | INFO | Total kasus dimuat: 90
+2026-06-27 16:37:38,944 | INFO | === TAHAP 3: Case Retrieval ===
+2026-06-27 16:37:38,944 | INFO | Domain: Perdata - Perbuatan Melawan Hukum (PMH) | Pengadilan: PN Bandung
+2026-06-27 16:37:38,962 | INFO | Total kasus dimuat: 90
+2026-06-27 16:37:38,970 | INFO | Split data -> train: 72 | test: 18
+2026-06-27 16:37:38,972 | INFO | Distribusi label: {'ditolak': 58, 'dikabulkan': 23, 'lainnya': 9}
+2026-06-27 16:37:38,975 | INFO | [SAVED] train_indices.json, test_indices.json, case_ids.json, label_encoder.pkl
+2026-06-27 16:37:38,976 | INFO | 
+--- TF-IDF Vectorization ---
+2026-06-27 16:37:39,011 | INFO | TF-IDF matrix: (90, 2094) | vocab: 2094
+2026-06-27 16:37:39,011 | INFO | 
+--- Model: SVM (LinearSVC) ---
+2026-06-27 16:37:39,011 | INFO | SVM Accuracy : 0.8889
+2026-06-27 16:37:39,011 | INFO | SVM Precision: 0.906
+2026-06-27 16:37:39,011 | INFO | SVM Recall   : 0.8889
+2026-06-27 16:37:39,018 | INFO | SVM F1-score : 0.8796
+2026-06-27 16:37:39,018 | INFO | 
+Classification Report (SVM):
+2026-06-27 16:37:39,022 | INFO |               precision    recall  f1-score   support
+
+  dikabulkan       1.00      0.60      0.75         5
+     ditolak       0.85      1.00      0.92        11
+     lainnya       1.00      1.00      1.00         2
+
+    accuracy                           0.89        18
+   macro avg       0.95      0.87      0.89        18
+weighted avg       0.91      0.89      0.88        18
+
+2026-06-27 16:37:39,022 | INFO | 
+--- Model: Naive Bayes (MultinomialNB) ---
+2026-06-27 16:37:39,031 | INFO | NB Accuracy : 0.9444
+2026-06-27 16:37:39,033 | INFO | NB Precision: 0.9491
+2026-06-27 16:37:39,033 | INFO | NB Recall   : 0.9444
+2026-06-27 16:37:39,033 | INFO | NB F1-score : 0.9426
+2026-06-27 16:37:39,033 | INFO | 
+Classification Report (Naive Bayes):
+2026-06-27 16:37:39,035 | INFO |               precision    recall  f1-score   support
+
+  dikabulkan       1.00      0.80      0.89         5
+     ditolak       0.92      1.00      0.96        11
+     lainnya       1.00      1.00      1.00         2
+
+    accuracy                           0.94        18
+   macro avg       0.97      0.93      0.95        18
+weighted avg       0.95      0.94      0.94        18
+
+2026-06-27 16:37:39,035 | INFO | 
+--- TF-IDF Cosine Similarity Retrieval ---
+2026-06-27 16:37:39,038 | INFO | TF-IDF Retrieval: {'precision@5': 0.7444, 'recall@5': 0.108, 'f1@5': 0.1775}
+2026-06-27 16:37:39,038 | INFO | 
+--- BERT Embeddings (all-MiniLM-L6-v2) ---
+2026-06-27 16:37:39,038 | INFO | Encoding dokumen... (mungkin butuh beberapa menit)
+2026-06-27 16:37:39,038 | INFO | No device provided, using cpu
+2026-06-27 16:37:39,566 | INFO | HTTP Request: GET https://huggingface.co/api/agent-harnesses "HTTP/1.1 200 OK"
+2026-06-27 16:37:39,831 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/modules.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-27 16:37:39,866 | INFO | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/modules.json "HTTP/1.1 200 OK"
+2026-06-27 16:37:40,156 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/config_sentence_transformers.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-27 16:37:40,160 | WARNING | Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+2026-06-27 16:37:40,214 | INFO | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/config_sentence_transformers.json "HTTP/1.1 200 OK"
+2026-06-27 16:37:40,217 | INFO | Loading SentenceTransformer model from sentence-transformers/all-MiniLM-L6-v2.
+2026-06-27 16:37:40,491 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/config_sentence_transformers.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-27 16:37:40,511 | INFO | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/config_sentence_transformers.json "HTTP/1.1 200 OK"
+2026-06-27 16:37:40,798 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/README.md "HTTP/1.1 307 Temporary Redirect"
+2026-06-27 16:37:40,821 | INFO | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/README.md "HTTP/1.1 200 OK"
+2026-06-27 16:37:41,091 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/modules.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-27 16:37:41,121 | INFO | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/modules.json "HTTP/1.1 200 OK"
+2026-06-27 16:37:41,407 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/sentence_bert_config.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-27 16:37:41,431 | INFO | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/sentence_bert_config.json "HTTP/1.1 200 OK"
+2026-06-27 16:37:41,719 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/adapter_config.json "HTTP/1.1 404 Not Found"
+2026-06-27 16:37:41,993 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-27 16:37:42,014 | INFO | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/config.json "HTTP/1.1 200 OK"
+2026-06-27 16:37:42,372 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/processor_config.json "HTTP/1.1 404 Not Found"
+2026-06-27 16:37:42,657 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/preprocessor_config.json "HTTP/1.1 404 Not Found"
+2026-06-27 16:37:42,943 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/video_preprocessor_config.json "HTTP/1.1 404 Not Found"
+2026-06-27 16:37:43,214 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/preprocessor_config.json "HTTP/1.1 404 Not Found"
+2026-06-27 16:37:43,489 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/tokenizer_config.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-27 16:37:43,511 | INFO | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/tokenizer_config.json "HTTP/1.1 200 OK"
+2026-06-27 16:37:43,792 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-27 16:37:43,821 | INFO | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/config.json "HTTP/1.1 200 OK"
+2026-06-27 16:37:44,081 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-27 16:37:44,107 | INFO | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/config.json "HTTP/1.1 200 OK"
+2026-06-27 16:37:44,372 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/tokenizer_config.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-27 16:37:44,421 | INFO | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/tokenizer_config.json "HTTP/1.1 200 OK"
+2026-06-27 16:37:44,706 | INFO | HTTP Request: GET https://huggingface.co/api/models/sentence-transformers/all-MiniLM-L6-v2/tree/main/additional_chat_templates?recursive=false&expand=false "HTTP/1.1 404 Not Found"
+2026-06-27 16:37:45,012 | INFO | HTTP Request: GET https://huggingface.co/api/models/sentence-transformers/all-MiniLM-L6-v2/tree/main?recursive=true&expand=false "HTTP/1.1 200 OK"
+2026-06-27 16:37:45,332 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/1_Pooling/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-27 16:37:45,355 | INFO | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/1_Pooling%2Fconfig.json "HTTP/1.1 200 OK"
+2026-06-27 16:37:45,652 | INFO | HTTP Request: GET https://huggingface.co/api/models/sentence-transformers/all-MiniLM-L6-v2 "HTTP/1.1 200 OK"
+2026-06-27 16:37:46,691 | INFO | BERT embeddings shape: (90, 384)
+2026-06-27 16:37:46,694 | INFO | BERT Retrieval: {'precision@5': 0.6444, 'recall@5': 0.0827, 'f1@5': 0.1409}
+2026-06-27 16:37:46,695 | INFO | 
+[SAVED] Perbandingan metrik -> data/eval/retrieval_metrics.csv
+2026-06-27 16:37:46,695 | INFO | 
+=== RINGKASAN PERBANDINGAN MODEL ===
+2026-06-27 16:37:46,695 | INFO | Model                            Accuracy  Precision     Recall         F1
+2026-06-27 16:37:46,695 | INFO | -----------------------------------------------------------------
+2026-06-27 16:37:46,698 | INFO | TF-IDF + SVM                       0.8889      0.906     0.8889     0.8796
+2026-06-27 16:37:46,698 | INFO | TF-IDF + Naive Bayes               0.9444     0.9491     0.9444     0.9426
+2026-06-27 16:37:46,698 | INFO | TF-IDF + Cosine                    0.7444     0.7444      0.108     0.1775
+2026-06-27 16:37:46,698 | INFO | BERT + Cosine                      0.6444     0.6444     0.0827     0.1409
+2026-06-27 16:37:46,698 | INFO | 
+--- Membuat data/eval/queries.json ---
+2026-06-27 16:37:46,872 | INFO | [QUERIES] 10 query tersimpan -> data/eval/queries.json
+2026-06-27 16:37:46,872 | INFO | 
+=== TAHAP 3 SELESAI ===
+2026-06-27 16:37:46,872 | INFO | Model TF-IDF vectorizer -> models/tfidf_vectorizer.pkl
+2026-06-27 16:37:46,872 | INFO | Model SVM               -> models/svm_model.pkl
+2026-06-27 16:37:46,872 | INFO | Model Naive Bayes       -> models/nb_model.pkl
+2026-06-27 16:37:46,872 | INFO | BERT embeddings         -> models/bert_embeddings.npy
+2026-06-27 16:37:46,872 | INFO | Train indices           -> models/train_indices.json  \u2190 penting untuk 04_predict.py
+2026-06-27 16:37:46,874 | INFO | Queries uji             -> data/eval/queries.json
+2026-06-27 16:37:46,874 | INFO | Metrik retrieval        -> data/eval/retrieval_metrics.csv
+2026-06-27 17:22:50,642 | INFO | === TAHAP 3: Case Retrieval ===
+2026-06-27 17:22:50,642 | INFO | Domain: Perdata - Perbuatan Melawan Hukum (PMH) | Pengadilan: PN Bandung
+2026-06-27 17:22:50,658 | INFO | Total kasus dimuat: 90
+2026-06-27 17:22:50,667 | INFO | Split data -> train: 72 | test: 18
+2026-06-27 17:22:50,668 | INFO | Distribusi label: {'ditolak': 58, 'dikabulkan': 23, 'lainnya': 9}
+2026-06-27 17:22:50,669 | INFO | [SAVED] train_indices.json, test_indices.json, case_ids.json, label_encoder.pkl
+2026-06-27 17:22:50,669 | INFO | 
+--- TF-IDF Vectorization ---
+2026-06-27 17:22:50,700 | INFO | TF-IDF matrix: (90, 2094) | vocab: 2094
+2026-06-27 17:22:50,700 | INFO | 
+--- Model: SVM (LinearSVC) ---
+2026-06-27 17:22:50,708 | INFO | SVM Accuracy : 0.8889
+2026-06-27 17:22:50,708 | INFO | SVM Precision: 0.906
+2026-06-27 17:22:50,708 | INFO | SVM Recall   : 0.8889
+2026-06-27 17:22:50,708 | INFO | SVM F1-score : 0.8796
+2026-06-27 17:22:50,708 | INFO | 
+Classification Report (SVM):
+2026-06-27 17:22:50,711 | INFO |               precision    recall  f1-score   support
+
+  dikabulkan       1.00      0.60      0.75         5
+     ditolak       0.85      1.00      0.92        11
+     lainnya       1.00      1.00      1.00         2
+
+    accuracy                           0.89        18
+   macro avg       0.95      0.87      0.89        18
+weighted avg       0.91      0.89      0.88        18
+
+2026-06-27 17:22:50,711 | INFO | 
+--- Model: Naive Bayes (MultinomialNB) ---
+2026-06-27 17:22:50,719 | INFO | NB Accuracy : 0.9444
+2026-06-27 17:22:50,720 | INFO | NB Precision: 0.9491
+2026-06-27 17:22:50,720 | INFO | NB Recall   : 0.9444
+2026-06-27 17:22:50,720 | INFO | NB F1-score : 0.9426
+2026-06-27 17:22:50,720 | INFO | 
+Classification Report (Naive Bayes):
+2026-06-27 17:22:50,723 | INFO |               precision    recall  f1-score   support
+
+  dikabulkan       1.00      0.80      0.89         5
+     ditolak       0.92      1.00      0.96        11
+     lainnya       1.00      1.00      1.00         2
+
+    accuracy                           0.94        18
+   macro avg       0.97      0.93      0.95        18
+weighted avg       0.95      0.94      0.94        18
+
+2026-06-27 17:22:50,723 | INFO | 
+--- TF-IDF Cosine Similarity Retrieval ---
+2026-06-27 17:22:50,724 | INFO | TF-IDF Retrieval: {'precision@5': 0.7444, 'recall@5': 0.108, 'f1@5': 0.1775}
+2026-06-27 17:22:50,724 | INFO | 
+--- BERT Embeddings (all-MiniLM-L6-v2) ---
+2026-06-27 17:22:50,724 | INFO | Encoding dokumen... (mungkin butuh beberapa menit)
+2026-06-27 17:22:50,725 | INFO | No device provided, using cpu
+2026-06-27 17:22:51,290 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/modules.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-27 17:22:51,290 | WARNING | Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+2026-06-27 17:22:51,320 | INFO | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/modules.json "HTTP/1.1 200 OK"
+2026-06-27 17:22:51,595 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/config_sentence_transformers.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-27 17:22:51,630 | INFO | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/config_sentence_transformers.json "HTTP/1.1 200 OK"
+2026-06-27 17:22:51,634 | INFO | Loading SentenceTransformer model from sentence-transformers/all-MiniLM-L6-v2.
+2026-06-27 17:22:51,904 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/config_sentence_transformers.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-27 17:22:51,926 | INFO | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/config_sentence_transformers.json "HTTP/1.1 200 OK"
+2026-06-27 17:22:52,212 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/README.md "HTTP/1.1 307 Temporary Redirect"
+2026-06-27 17:22:52,235 | INFO | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/README.md "HTTP/1.1 200 OK"
+2026-06-27 17:22:52,547 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/modules.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-27 17:22:52,572 | INFO | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/modules.json "HTTP/1.1 200 OK"
+2026-06-27 17:22:52,864 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/sentence_bert_config.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-27 17:22:52,890 | INFO | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/sentence_bert_config.json "HTTP/1.1 200 OK"
+2026-06-27 17:22:53,164 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/adapter_config.json "HTTP/1.1 404 Not Found"
+2026-06-27 17:22:53,420 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-27 17:22:53,450 | INFO | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/config.json "HTTP/1.1 200 OK"
+2026-06-27 17:22:53,847 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/processor_config.json "HTTP/1.1 404 Not Found"
+2026-06-27 17:22:54,124 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/preprocessor_config.json "HTTP/1.1 404 Not Found"
+2026-06-27 17:22:54,410 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/video_preprocessor_config.json "HTTP/1.1 404 Not Found"
+2026-06-27 17:22:54,694 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/preprocessor_config.json "HTTP/1.1 404 Not Found"
+2026-06-27 17:22:54,981 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/tokenizer_config.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-27 17:22:55,000 | INFO | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/tokenizer_config.json "HTTP/1.1 200 OK"
+2026-06-27 17:22:55,286 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-27 17:22:55,300 | INFO | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/config.json "HTTP/1.1 200 OK"
+2026-06-27 17:22:55,570 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-27 17:22:55,601 | INFO | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/config.json "HTTP/1.1 200 OK"
+2026-06-27 17:22:55,887 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/tokenizer_config.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-27 17:22:55,910 | INFO | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/tokenizer_config.json "HTTP/1.1 200 OK"
+2026-06-27 17:22:56,190 | INFO | HTTP Request: GET https://huggingface.co/api/models/sentence-transformers/all-MiniLM-L6-v2/tree/main/additional_chat_templates?recursive=false&expand=false "HTTP/1.1 404 Not Found"
+2026-06-27 17:22:56,480 | INFO | HTTP Request: GET https://huggingface.co/api/models/sentence-transformers/all-MiniLM-L6-v2/tree/main?recursive=true&expand=false "HTTP/1.1 200 OK"
+2026-06-27 17:22:56,810 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/1_Pooling/config.json "HTTP/1.1 307 Temporary Redirect"
+2026-06-27 17:22:56,910 | INFO | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/1110a243fdf4706b3f48f1d95db1a4f5529b4d41/1_Pooling%2Fconfig.json "HTTP/1.1 200 OK"
+2026-06-27 17:22:57,324 | INFO | HTTP Request: GET https://huggingface.co/api/models/sentence-transformers/all-MiniLM-L6-v2 "HTTP/1.1 200 OK"
+2026-06-27 17:22:58,430 | INFO | BERT embeddings shape: (90, 384)
+2026-06-27 17:22:58,434 | INFO | BERT Retrieval: {'precision@5': 0.6444, 'recall@5': 0.0827, 'f1@5': 0.1409}
+2026-06-27 17:22:58,438 | INFO | 
+[SAVED] Perbandingan metrik -> data/eval/retrieval_metrics.csv
+2026-06-27 17:22:58,440 | INFO | 
+=== RINGKASAN PERBANDINGAN MODEL ===
+2026-06-27 17:22:58,440 | INFO | Model                            Accuracy  Precision     Recall         F1
+2026-06-27 17:22:58,440 | INFO | -----------------------------------------------------------------
+2026-06-27 17:22:58,440 | INFO | TF-IDF + SVM                       0.8889      0.906     0.8889     0.8796
+2026-06-27 17:22:58,440 | INFO | TF-IDF + Naive Bayes               0.9444     0.9491     0.9444     0.9426
+2026-06-27 17:22:58,440 | INFO | TF-IDF + Cosine                    0.7444     0.7444      0.108     0.1775
+2026-06-27 17:22:58,440 | INFO | BERT + Cosine                      0.6444     0.6444     0.0827     0.1409
+2026-06-27 17:22:58,440 | INFO | 
+--- Membuat data/eval/queries.json ---
+2026-06-27 17:22:58,620 | INFO | [QUERIES] 10 query tersimpan -> data/eval/queries.json
+2026-06-27 17:22:58,620 | INFO | 
+=== TAHAP 3 SELESAI ===
+2026-06-27 17:22:58,620 | INFO | Model TF-IDF vectorizer -> models/tfidf_vectorizer.pkl
+2026-06-27 17:22:58,620 | INFO | Model SVM               -> models/svm_model.pkl
+2026-06-27 17:22:58,620 | INFO | Model Naive Bayes       -> models/nb_model.pkl
+2026-06-27 17:22:58,620 | INFO | BERT embeddings         -> models/bert_embeddings.npy
+2026-06-27 17:22:58,620 | INFO | Train indices           -> models/train_indices.json  \u2190 penting untuk 04_predict.py
+2026-06-27 17:22:58,620 | INFO | Queries uji             -> data/eval/queries.json
+2026-06-27 17:22:58,620 | INFO | Metrik retrieval        -> data/eval/retrieval_metrics.csv
