@@ -1,3 +1,9 @@
+<<<<<<< HEAD
 case_id,no_perkara,true_label,pred_label_svm,jumlah_kata
 case_zaf0fcc0aba09294b0dc313031343439,558/Pdt.G/2025/PN Bdg,dikabulkan,ditolak,8492
 case_zaf16b8f3a5d0dae94b9313033303332,57/Pdt.G/2025/PN Spt,dikabulkan,ditolak,5146
+=======
+case_id,no_perkara,true_label,pred_label_svm,jumlah_kata
+case_zaf0fcc0aba09294b0dc313031343439,558/Pdt.G/2025/PN Bdg,dikabulkan,ditolak,8492
+case_zaf16b8f3a5d0dae94b9313033303332,57/Pdt.G/2025/PN Spt,dikabulkan,ditolak,5146
+>>>>>>> 723aa06aa9ebf4dbc8d787cb4c0dc4be53a35fb7

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {
   "timestamp": "2026-06-25T20:40:27.512279",
   "approaches": {
@@ -56,4 +57,64 @@
       }
     ]
   }
+=======
+{
+  "timestamp": "2026-06-25T20:40:27.512279",
+  "approaches": {
+    "tfidf": {
+      "method": "TF-IDF + Cosine Similarity",
+      "features": 1000,
+      "metrics": {
+        "Recall@1": 1.0,
+        "Recall@3": 1.0,
+        "Recall@5": 1.0
+      }
+    },
+    "bert": {
+      "method": "BERT (all-MiniLM-L6-v2) + Cosine Similarity",
+      "dimension": 384,
+      "metrics": {
+        "Recall@1": 1.0,
+        "Recall@3": 1.0,
+        "Recall@5": 1.0
+      }
+    }
+  },
+  "total_cases": 91,
+  "train_cases": 72,
+  "test_cases": 19,
+  "unique_case_types": 1,
+  "test_case_sample": {
+    "case_id": "case_zaf0f054826bc48eb394313435303230",
+    "no_perkara": "371/Pdt.G/2025/PN Bdg",
+    "retrieved_top_3_tfidf": [
+      {
+        "no_perkara": "179/Pdt.G/2018/PN Bdg",
+        "similarity_score": 0.8525026439947179
+      },
+      {
+        "no_perkara": "419/Pdt.G/2025/PN Bdg",
+        "similarity_score": 0.7643353588617614
+      },
+      {
+        "no_perkara": "455/Pdt.G/2025/PN Bdg",
+        "similarity_score": 0.3518096341978268
+      }
+    ],
+    "retrieved_top_3_bert": [
+      {
+        "no_perkara": "57/Pdt.G/2025/PN Spt",
+        "similarity_score": 1.0000001192092896
+      },
+      {
+        "no_perkara": "390/Pdt.G/2025/PN Bdg",
+        "similarity_score": 1.0000001192092896
+      },
+      {
+        "no_perkara": "278/Pdt.G/2025/PN Bdg",
+        "similarity_score": 1.0000001192092896
+      }
+    ]
+  }
+>>>>>>> 723aa06aa9ebf4dbc8d787cb4c0dc4be53a35fb7
 }
