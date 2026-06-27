@@ -1,10 +1,25 @@
 """
+04_predict.py
+==============
 Tahap 4: Case Solution Reuse
-Tujuan: Gunakan putusan lama sebagai dasar pencarian untuk kasus baru
-Pendekatan: BERT retrieval + majority vote / weighted similarity
+Gunakan putusan lama (top-k termirip) sebagai dasar solusi kasus baru.
+Strategi: majority vote / weighted similarity.
+
+VERSI PERBAIKAN. Bug yang diperbaiki dari versi lama:
+  - Path model salah ('data/models' -> seharusnya 'models', sesuai 03_retrieval.py)
+  - train_indices.json dimuat dgn joblib.load -> seharusnya json.load
+  - File 'bert_train_embeddings.npy' & 'bert_model.pkl' tidak pernah dibuat 03 ->
+    sekarang pakai 'bert_embeddings.npy' (np.load) lalu di-slice ke train
+  - Kolom solusi 'decision_summary'/'dakwaan_utama' tidak ada di cases.csv ->
+    sekarang pakai 'amar_putusan' (solusi nyata), fallback ringkasan_fakta
+  - Fallback query 'facts_summary' tidak ada -> pakai 'ringkasan_fakta'
+  - Fallback otomatis ke TF-IDF cosine kalau BERT/embeddings tidak tersedia
+
+Output:
+  data/results/predictions.csv  (query_id, predicted_solution, top_5_case_ids)
 """
 
-from pathlib import Path
+import os
 import json
 from collections import Counter, defaultdict
 
@@ -13,33 +28,24 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
 
+# ── Konfigurasi path (HARUS sama dgn 03_retrieval.py) ───────────────────────
+PROCESSED_DIR = "data/processed"
+MODELS_DIR    = "models"
+EVAL_DIR      = "data/eval"
+RESULTS_DIR   = "data/results"
+os.makedirs(RESULTS_DIR, exist_ok=True)
+
+CASES_CSV    = f"{PROCESSED_DIR}/cases.csv"
+QUERIES_JSON = f"{EVAL_DIR}/queries.json"
+K            = 5
+RANDOM_STATE = 42
+
+# BERT opsional
 try:
     from sentence_transformers import SentenceTransformer
+    BERT_AVAILABLE = True
 except ImportError:
-    import subprocess
-    subprocess.check_call(["pip", "install", "sentence-transformers", "-q"])
-    from sentence_transformers import SentenceTransformer
-
-
-BASE_DIR = Path(__file__).resolve().parent
-DATA_DIR = BASE_DIR / "data" / "processed"
-MODELS_DIR = BASE_DIR / "data" / "models"
-EVAL_DIR = BASE_DIR / "data" / "eval"
-RESULTS_DIR = BASE_DIR / "data" / "results"
-RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-
-cases = pd.read_csv(DATA_DIR / "cases.csv")
-train_indices = joblib.load(MODELS_DIR / "train_indices.json")
-bert_train_embeddings = joblib.load(MODELS_DIR / "bert_train_embeddings.npy")
-
-try:
-    bert_model = joblib.load(MODELS_DIR / "bert_model.pkl")
-except Exception:
-    bert_model = SentenceTransformer("all-MiniLM-L6-v2")
-
-train_cases = cases.iloc[train_indices].reset_index(drop=True)
-train_case_ids = train_cases["case_id"].tolist()
-train_embeddings = np.asarray(bert_train_embeddings)
+    BERT_AVAILABLE = False
 
 
 def safe_text(value):
@@ -48,143 +54,166 @@ def safe_text(value):
     return str(value).strip()
 
 
-def extract_solution_text(row):
-    for column in ["decision_summary", "dakwaan_utama", "legal_reasoning_summary"]:
-        text = safe_text(getattr(row, column, ""))
-        if text:
-            return text
-    return safe_text(getattr(row, "decision_type", ""))
+# ── Load data & indeks train ────────────────────────────────────────────────
+cases = pd.read_csv(CASES_CSV)
 
+with open(f"{MODELS_DIR}/train_indices.json", "r", encoding="utf-8") as f:
+    train_indices = json.load(f)
+
+train_cases    = cases.iloc[train_indices].reset_index(drop=True)
+train_case_ids = train_cases["case_id"].astype(str).tolist()
+
+
+# ── Solusi nyata = amar putusan (fallback: ringkasan_fakta, decision_type) ──
+def extract_solution_text(row):
+    for col in ("amar_putusan", "ringkasan_fakta", "decision_type"):
+        val = safe_text(row.get(col, ""))
+        if val:
+            return val
+    return ""
 
 case_solutions = {
-    row.case_id: extract_solution_text(row)
-    for row in cases.itertuples(index=False)
+    safe_text(r["case_id"]): extract_solution_text(r)
+    for _, r in cases.iterrows()
 }
 
 
-def retrieve_top_k(query: str, k: int = 5, method: str = "bert"):
-    query_text = safe_text(query)
-    if not query_text:
+# ── Siapkan representasi retrieval (BERT kalau ada, kalau tidak TF-IDF) ──────
+USE_BERT         = False
+bert_model       = None
+train_embeddings = None
+vectorizer       = None
+train_tfidf      = None
+
+bert_path = f"{MODELS_DIR}/bert_embeddings.npy"
+if BERT_AVAILABLE and os.path.exists(bert_path):
+    emb = np.load(bert_path, allow_pickle=True)
+    # 03 menyimpan embeddings untuk SEMUA dokumen (urutan = cases.csv)
+    if emb.size > 0 and emb.shape[0] == len(cases):
+        train_embeddings = emb[train_indices]
+        bert_model       = SentenceTransformer("all-MiniLM-L6-v2")
+        USE_BERT         = True
+
+if not USE_BERT:
+    vectorizer = joblib.load(f"{MODELS_DIR}/tfidf_vectorizer.pkl")
+    text_combined = (
+        train_cases.get("ringkasan_fakta", "").fillna("") + " " +
+        train_cases.get("argumen_hukum", "").fillna("") + " " +
+        train_cases.get("pasal", "").fillna("") + " " +
+        train_cases.get("amar_putusan", "").fillna("")
+    ).str.lower().str.strip()
+    train_tfidf = vectorizer.transform(text_combined)
+    print("[Tahap 4] BERT tidak tersedia -> memakai TF-IDF cosine untuk retrieval.")
+else:
+    print("[Tahap 4] Memakai BERT embeddings untuk retrieval.")
+
+
+def retrieve_top_k(query: str, k: int = K):
+    q = safe_text(query)
+    if not q:
         return []
+    if USE_BERT:
+        qv   = bert_model.encode([q], normalize_embeddings=True)
+        sims = cosine_similarity(qv, train_embeddings)[0]
+    else:
+        qv   = vectorizer.transform([q.lower()])
+        sims = cosine_similarity(qv, train_tfidf)[0]
+    top_idx = np.argsort(sims)[::-1][:k]
+    out = []
+    for i in top_idx:
+        cid = train_case_ids[i]
+        out.append({
+            "case_id": cid,
+            "similarity": float(sims[i]),
+            "solution": case_solutions.get(cid, ""),
+        })
+    return out
 
-    query_embedding = bert_model.encode([query_text])[0]
-    similarities = cosine_similarity([query_embedding], train_embeddings)[0]
-    top_indices = np.argsort(similarities)[-k:][::-1]
 
-    results = []
-    for position in top_indices:
-        case_id = train_case_ids[position]
-        results.append(
-            {
-                "case_id": case_id,
-                "similarity": float(similarities[position]),
-                "solution": case_solutions.get(case_id, ""),
-            }
-        )
-    return results
-
-
-def choose_solution(top_k_cases, strategy: str = "weighted"):
-    if not top_k_cases:
+def choose_solution(top_k, strategy: str = "weighted"):
+    if not top_k:
         return ""
 
     if strategy == "majority":
         counts = Counter()
-        score_totals = defaultdict(float)
-        first_seen = {}
-
-        for rank, item in enumerate(top_k_cases):
-            key = safe_text(item["solution"])
+        scores = defaultdict(float)
+        first  = {}
+        for rank, it in enumerate(top_k):
+            key = safe_text(it["solution"])
             if not key:
                 continue
             counts[key] += 1
-            score_totals[key] += item["similarity"]
-            first_seen.setdefault(key, rank)
-
+            scores[key] += it["similarity"]
+            first.setdefault(key, rank)
         if not counts:
-            return safe_text(top_k_cases[0]["solution"])
+            return safe_text(top_k[0]["solution"])
+        return max(counts, key=lambda k: (counts[k], scores[k], -first[k]))
 
-        best_key = max(
-            counts.keys(),
-            key=lambda key: (counts[key], score_totals[key], -first_seen[key]),
-        )
-        return best_key
-
-    score_totals = defaultdict(float)
-    best_item = {}
-
-    for item in top_k_cases:
-        key = safe_text(item["solution"])
+    # weighted similarity
+    scores = defaultdict(float)
+    best   = {}
+    for it in top_k:
+        key = safe_text(it["solution"])
         if not key:
             continue
-        score_totals[key] += item["similarity"]
-        if key not in best_item or item["similarity"] > best_item[key]["similarity"]:
-            best_item[key] = item
-
-    if not score_totals:
-        return safe_text(top_k_cases[0]["solution"])
-
-    best_key = max(score_totals.keys(), key=lambda key: (score_totals[key], best_item[key]["similarity"]))
-    return best_key
+        scores[key] += it["similarity"]
+        if key not in best or it["similarity"] > best[key]["similarity"]:
+            best[key] = it
+    if not scores:
+        return safe_text(top_k[0]["solution"])
+    return max(scores, key=lambda k: (scores[k], best[k]["similarity"]))
 
 
-def predict_outcome(query: str, k: int = 5, strategy: str = "weighted", method: str = "bert"):
-    top_k = retrieve_top_k(query, k=k, method=method)
-    predicted_solution = choose_solution(top_k, strategy=strategy)
-    top_5_case_ids = [item["case_id"] for item in top_k]
-    return predicted_solution, top_5_case_ids, top_k
+def predict_outcome(query: str, k: int = K, strategy: str = "weighted"):
+    top_k = retrieve_top_k(query, k=k)
+    predicted = choose_solution(top_k, strategy=strategy)
+    top_ids   = [it["case_id"] for it in top_k]
+    return predicted, top_ids, top_k
 
 
-# Demo manual: pakai queries.json bila tersedia, kalau tidak fallback ke 5 sample kasus
-queries_path = EVAL_DIR / "queries.json"
+# ── Demo: pakai queries.json bila ada, kalau tidak 5 sample acak ────────────
 rows = []
-
-if queries_path.exists():
-    with open(queries_path, "r", encoding="utf-8") as f:
-        eval_queries = json.load(f)
-    print("[Tahap 4] Demo prediksi solusi dari data/eval/queries.json")
+if os.path.exists(QUERIES_JSON):
+    with open(QUERIES_JSON, "r", encoding="utf-8") as f:
+        raw_queries = json.load(f)
+    eval_queries = [
+        {
+            "query_id": q.get("query_id", q.get("case_id", "")),
+            "query_text": safe_text(q.get("query_text", "")),
+            "ground_truth_case_id": q.get("ground_truth_case_id", ""),
+        }
+        for q in raw_queries
+    ]
+    print("[Tahap 4] Demo prediksi dari data/eval/queries.json")
 else:
     eval_queries = [
         {
-            "query_id": row["case_id"],
-            "query_text": safe_text(row["facts_summary"]),
-            "ground_truth_case_id": row["case_id"],
+            "query_id": safe_text(r["case_id"]),
+            "query_text": safe_text(r.get("ringkasan_fakta", "")),
+            "ground_truth_case_id": safe_text(r["case_id"]),
         }
-        for _, row in cases.sample(5, random_state=42).iterrows()
+        for _, r in cases.sample(min(5, len(cases)), random_state=RANDOM_STATE).iterrows()
     ]
-    print("[Tahap 4] Demo prediksi solusi dari 5 sample kasus")
+    print("[Tahap 4] Demo prediksi dari 5 sample kasus")
 
-for i, query_item in enumerate(eval_queries):
-    query_id = query_item["query_id"]
-    query_text = safe_text(query_item["query_text"])
-    ground_truth_case_id = query_item.get("ground_truth_case_id", "")
+for i, q in enumerate(eval_queries, start=1):
+    predicted, top_ids, _ = predict_outcome(q["query_text"], k=K, strategy="weighted")
+    gt = q.get("ground_truth_case_id", "")
+    actual = case_solutions.get(gt, "") if gt else ""
 
-    predicted_solution, top_case_ids, top_k = predict_outcome(query_text, k=5, strategy="weighted", method="bert")
-    actual_solution = case_solutions.get(ground_truth_case_id, "") if ground_truth_case_id else ""
+    rows.append({
+        "query_id": q["query_id"],
+        "predicted_solution": predicted,
+        "top_5_case_ids": "|".join(map(str, top_ids)),
+    })
 
-    rows.append(
-        {
-            "query_id": query_id,
-            "predicted_solution": predicted_solution,
-            "top_5_case_ids": "|".join(top_case_ids),
-        }
-    )
+    print(f"  {i}. {q['query_id']}")
+    print(f"     predicted: {predicted[:140]}")
+    if actual:
+        print(f"     actual   : {actual[:140]}")
+    print(f"     top cases: {' | '.join(map(str, top_ids))}")
 
-    print(f"  {i + 1}. {query_id}")
-    if actual_solution:
-        print(f"     predicted: {predicted_solution[:140]}")
-        print(f"     actual:     {actual_solution[:140]}")
-    else:
-        print(f"     predicted: {predicted_solution[:140]}")
-    print(f"     top cases:  {' | '.join(top_case_ids)}")
-
-predictions_df = pd.DataFrame(rows)
-predictions_path = RESULTS_DIR / "predictions.csv"
-predictions_df.to_csv(predictions_path, index=False, encoding="utf-8-sig")
-
+predictions_path = f"{RESULTS_DIR}/predictions.csv"
+pd.DataFrame(rows).to_csv(predictions_path, index=False, encoding="utf-8-sig")
 print(f"\nPredictions saved to: {predictions_path}")
-print("Ready untuk Tahap 5.")
-
-
-if __name__ == "__main__":
-    pass
+print("Siap untuk Tahap 5.")

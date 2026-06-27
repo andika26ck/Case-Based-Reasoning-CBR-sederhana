@@ -1,620 +1,375 @@
 """
 02_representation.py
-====================
+=====================
 Tahap 2 (Case Representation) - Tugas CBR Penalaran Komputer
-Domain: Perdata - Perbuatan Melawan Hukum (PMH)
-Pengadilan: PN Bandung
+Domain: Perdata - Perbuatan Melawan Hukum (PMH) | Pengadilan: PN Bandung
 
-Tujuan:
-    Mengubah raw case data (metadata + teks mentah) menjadi representasi terstruktur
-    yang siap untuk similarity matching di tahap 3.
-
-Yang dikerjakan:
-    1. Ekstraksi metadata dari metadata_raw.csv
-    2. Ekstraksi konten kunci dari file data/raw/*.txt:
-       - Bagian "DUDUK PERKARA" -> Fakta-fakta kunci kasus
-       - Bagian "MENIMBANG" -> Argumen hukum & pertimbangan
-       - Bagian "AMAR" -> Keputusan akhir
-    3. Feature engineering:
-       - Jumlah pihak (penggugat, tergugat, turut tergugat)
-       - Durasi proses hukum (register date - court date)
-       - Jenis putusan (Dikabulkan/Ditolak/Tidak Dapat Diterima/Sebagian)
-       - Kehadiran frasa hukum penting (perbuatan melawan hukum, ganti rugi, dll)
-       - Jumlah dokumen pendukung yang disebut
-       - Panjang ringkasan
-    4. Normalkan panjang teks untuk konsistensi
+Perbaikan dari versi sebelumnya:
+- Tambah ekstraksi NAMA penggugat & tergugat (bukan hanya jumlahnya)
+- Tambah kolom text_full (sesuai spesifikasi tugas)
+- Kolom pasal diberi nama eksplisit sesuai spesifikasi
+- Perbaikan ekstraksi ringkasan fakta agar lebih representatif
 
 Output:
-    data/processed/cases.csv -> representasi terstruktur semua kasus
-    data/processed/cases.json -> format alternatif (optional)
-
-Cara pakai:
-    python 02_representation.py
-
+    data/processed/cases.csv    -> dataset terstruktur siap dipakai model
+    data/processed/cases.json   -> format alternatif JSON
 """
 
 import os
 import re
 import json
 import logging
-from datetime import datetime
-from pathlib import Path
 
 import pandas as pd
 
-# ============================================================================
+# ----------------------------------------------------------------------------
 # KONFIGURASI
-# ============================================================================
+# ----------------------------------------------------------------------------
 RAW_DIR = "data/raw"
 PROCESSED_DIR = "data/processed"
 LOG_DIR = "logs"
-
 METADATA_CSV = f"{PROCESSED_DIR}/metadata_raw.csv"
 OUTPUT_CSV = f"{PROCESSED_DIR}/cases.csv"
 OUTPUT_JSON = f"{PROCESSED_DIR}/cases.json"
 
-# Konfigurasi ekstraksi
-MAX_FACTS_LENGTH = 500          # Maksimal karakter untuk bagian "FAKTA KUNCI"
-MAX_LEGAL_REASONING = 800       # Maksimal karakter untuk "ARGUMEN HUKUM"
-MAX_DECISION_LENGTH = 400       # Maksimal karakter untuk "KEPUTUSAN"
+MAX_TEXT_FULL_CHARS = 5000   # karakter maksimum untuk kolom text_full (preview)
+                              # teks lengkap tetap bisa dibaca dari data/raw/*.txt
 
-# Setup logging
+os.makedirs(PROCESSED_DIR, exist_ok=True)
 os.makedirs(LOG_DIR, exist_ok=True)
+
 logging.basicConfig(
     filename=f"{LOG_DIR}/representation.log",
     level=logging.INFO,
     format="%(asctime)s | %(levelname)s | %(message)s",
 )
 
-logger = logging.getLogger(__name__)
+
+def log(msg):
+    print(msg)
+    logging.info(msg)
 
 
-# ============================================================================
-# FUNGSI UTILITAS
-# ============================================================================
-
-def clean_text(text):
-    """Normalisasi teks: strip, lowercase, whitespace."""
-    if not isinstance(text, str):
+# ----------------------------------------------------------------------------
+# HELPER: BACA TEKS RAW
+# ----------------------------------------------------------------------------
+def read_raw_text(case_id: str) -> str:
+    path = os.path.join(RAW_DIR, f"{case_id}.txt")
+    if not os.path.exists(path):
         return ""
-    text = text.strip().lower()
-    # Normalisasi multiple whitespace
-    text = re.sub(r'\s+', ' ', text)
-    return text
+    with open(path, "r", encoding="utf-8") as f:
+        return f.read()
 
 
-def extract_parties(text):
-    """Ekstrak jumlah pihak dari teks."""
-    penggugat = len(re.findall(r'\bpenggugat\s+[0-9]', text, re.IGNORECASE))
-    tergugat = len(re.findall(r'\btergugat\s+[0-9]', text, re.IGNORECASE))
-    turut_tergugat = len(re.findall(r'\bturut\s+tergugat\s+[0-9]', text, re.IGNORECASE))
-    
-    # Jika pattern ketat tidak ketemu, gunakan heuristik sederhana
-    if penggugat == 0:
-        penggugat = 1  # Minimal ada 1 penggugat
-    if tergugat == 0:
-        tergugat = 1   # Minimal ada 1 tergugat
-    
-    # Batasi maksimal 20 pihak per kategori (untuk menghindari overcounting)
-    penggugat = min(penggugat, 20)
-    tergugat = min(tergugat, 20)
-    turut_tergugat = min(turut_tergugat, 10)
-    
-    return {
-        "num_penggugat": penggugat,
-        "num_tergugat": tergugat,
-        "num_turut_tergugat": turut_tergugat,
-        "total_pihak": penggugat + tergugat + turut_tergugat,
+# ----------------------------------------------------------------------------
+# EKSTRAKSI NAMA PIHAK (penggugat & tergugat)
+# Sesuai spesifikasi tugas: "Nama pihak Penggugat & Tergugat"
+# ----------------------------------------------------------------------------
+def extract_pihak(text: str) -> dict:
+    """Ekstrak nama penggugat dan tergugat dari teks putusan.
+
+    Pola yang dicari (sesuai format umum putusan perdata MA RI):
+    - "PT. XXX sebagai Penggugat"
+    - "melawan / dengan / lawan"  <-- pemisah
+    - "CV. YYY sebagai Tergugat"
+
+    Return dict: {
+        'penggugat': 'nama penggugat',
+        'tergugat': 'nama tergugat',
+        'num_penggugat': int,
+        'num_tergugat': int,
+    }
+    """
+    result = {
+        "penggugat": "",
+        "tergugat": "",
+        "num_penggugat": 0,
+        "num_tergugat": 0,
     }
 
-
-def extract_decision_type(text):
-    """
-    Ekstrak tipe putusan dari teks amar.
-    Return: "Dikabulkan", "Ditolak", "Tidak Dapat Diterima", "Sebagian", atau "Lainnya"
-    """
-    text_clean = text.lower()
-    
-    # Cek tipe putusan
-    if re.search(r'tidak dapat diterima|niet ontvankelijke', text_clean):
-        return "Tidak Dapat Diterima"
-    elif re.search(r'dikabulkan', text_clean):
-        if re.search(r'sebagian', text_clean):
-            return "Dikabulkan Sebagian"
-        return "Dikabulkan"
-    elif re.search(r'ditolak', text_clean):
-        return "Ditolak"
-    elif re.search(r'sebagian', text_clean):
-        return "Sebagian"
-    else:
-        return "Lainnya"
-
-
-def extract_legal_keywords(text):
-    """
-    Deteksi kehadiran frasa hukum penting yang relevan dengan PMH.
-    Return: dict dengan boolean flags dan frekuensi
-    """
-    text_clean = text.lower()
-    
-    keywords = {
-        "has_perbuatan_melawan_hukum": bool(re.search(r'perbuatan melawan hukum|onrechmatiged', text_clean)),
-        "has_ganti_rugi": bool(re.search(r'ganti rugi|ganti\s+kerugian', text_clean)),
-        "has_tanah": bool(re.search(r'tanah|sertifikat|hak milik', text_clean)),
-        "has_kontrak": bool(re.search(r'kontrak|perjanjian|akta|notaris', text_clean)),
-        "has_perbuatan_tercela": bool(re.search(r'perbuatan tercela|onzedelijk', text_clean)),
-        "has_dokumen": bool(re.search(r'dokumen|surat|bukti', text_clean)),
-        "has_mediasi": bool(re.search(r'mediasi|perdamaian|perma', text_clean)),
-    }
-    
-    return keywords
-
-
-def extract_important_pasal(text):
-    """
-    Ekstrak nomor pasal yang direferensikan dalam putusan.
-    Return: list pasal yang paling sering disebut
-    """
-    text_clean = text.lower()
-    # Pattern: "Pasal 123", "pasal 123 KUHPerdata", dll
-    pasal_matches = re.findall(r'pasal\s+(\d+(?:\s+[a-z\.]+)?)', text_clean)
-    
-    # Ambil yang unik dan hitung frekuensi
-    pasal_freq = {}
-    for p in pasal_matches:
-        pasal_freq[p] = pasal_freq.get(p, 0) + 1
-    
-    # Sort by frequency dan ambil top 5
-    top_pasal = sorted(pasal_freq.items(), key=lambda x: x[1], reverse=True)[:5]
-    return [p[0] for p in top_pasal]
-
-
-def extract_key_facts(text):
-    """
-    Ekstrak fakta kunci: barang bukti, dakwaan, objek sengketa.
-    Return: structured dict dengan fakta-fakta penting
-    """
-    text_clean = text.lower()
-    
-    facts = {
-        "bukti_utama": [],
-        "objek_sengketa": "",
-        "dakwaan_utama": "",
-        "kerugian_dituntut": "",
-    }
-    
-    # ---- Ekstrak bukti ----
-    bukti_patterns = [
-        r'(?:bukti|dokumen|surat|akta|sertifikat)[^.!?]*?(?:nomor|no\.?)\s*[\d\/\w\-]+',
-        r'(?:sertifikat hak milik|shm|ahu)[^.!?]*?(?:nomor|no\.?)\s*[\d\/]+',
-        r'(?:akta|notaris|ppat)[^.!?]*?(?:nomor|no\.?)\s*[\d\/\w\-]+',
-    ]
-    
-    for pattern in bukti_patterns:
-        matches = re.findall(pattern, text_clean)
-        facts["bukti_utama"].extend(matches[:3])  # Ambil max 3 per pattern
-    
-    # ---- Ekstrak objek sengketa ----
-    if re.search(r'tanah.*?seluas\s+[\d.]+\s*(?:m2|ha)', text_clean):
-        match = re.search(r'(tanah[^.!?]*?seluas\s+[\d.]+\s*(?:m2|ha)[^.!?]*)', text_clean)
-        if match:
-            facts["objek_sengketa"] = match.group(1)[:200]
-    
-    # ---- Ekstrak dakwaan utama ----
-    dakwaan_patterns = [
-        r'(?:penggugat|pemohon)[^.]*?(?:mendalilkan|mengajukan gugatan|menggugat)[^.]*?bahwa[^.]*?[.!?]',
-        r'(?:perbuatan melawan hukum|perlanggarah|pelanggaran)[^.]*?[.!?]',
-    ]
-    
-    for pattern in dakwaan_patterns:
-        match = re.search(pattern, text_clean)
-        if match:
-            facts["dakwaan_utama"] = match.group(0)[:250]
-            break
-    
-    # ---- Ekstrak kerugian yang dituntut ----
-    kerugian_match = re.search(
-        r'(?:kerugian|ganti rugi|penggantian)[^.]*?(?:rp\.?\s*[\d.,]+[^.]*?)?(?:miliar|juta|ribu)?',
-        text_clean
-    )
-    if kerugian_match:
-        facts["kerugian_dituntut"] = kerugian_match.group(0)[:200]
-    
-    return facts
-
-
-def generate_qa_pairs(case_data):
-    """
-    Generate simple QA pairs dari case representation.
-    Ini berguna untuk information retrieval nantinya.
-    
-    Return: list of dict dengan "question" dan "answer"
-    """
-    qa_pairs = []
-    
-    # QA 1: Siapa pihak-pihak yang terlibat?
-    qa_pairs.append({
-        "question": "siapa saja pihak yang terlibat dalam perkara ini?",
-        "answer": f"{case_data['num_penggugat']} penggugat, {case_data['num_tergugat']} tergugat, "
-                  f"{case_data['num_turut_tergugat']} turut tergugat"
-    })
-    
-    # QA 2: Berapa lama proses perkara?
-    if case_data.get('process_duration_days'):
-        days = case_data['process_duration_days']
-        months = round(days / 30, 1)
-        qa_pairs.append({
-            "question": "berapa lama durasi proses perkara ini?",
-            "answer": f"{days} hari ({months} bulan)"
-        })
-    
-    # QA 3: Apa jenis putusan?
-    qa_pairs.append({
-        "question": "bagaimana hasil putusan dalam perkara ini?",
-        "answer": case_data.get('decision_type', 'Tidak diketahui')
-    })
-    
-    # QA 4: Apakah melibatkan objek tanah?
-    qa_pairs.append({
-        "question": "apakah perkara ini melibatkan masalah pertanahan?",
-        "answer": "ya" if case_data.get('has_tanah') else "tidak"
-    })
-    
-    # QA 5: Apakah melibatkan ganti rugi?
-    qa_pairs.append({
-        "question": "apakah ada tuntutan ganti rugi dalam perkara ini?",
-        "answer": "ya" if case_data.get('has_ganti_rugi') else "tidak"
-    })
-    
-    # QA 6: Nomor perkara?
-    qa_pairs.append({
-        "question": "berapa nomor perkara ini?",
-        "answer": case_data.get('no_perkara', '')
-    })
-    
-    return qa_pairs
-
-
-def extract_section(text, section_name):
-    """
-    Ekstrak bagian tertentu dari teks putusan.
-    
-    section_name: "duduk_perkara", "menimbang", "amar"
-    Return: teks bagian (dengan panjang terbatas)
-    """
     text_lower = text.lower()
-    
-    # Tentukan pattern awal dan akhir section
-    if section_name == "duduk_perkara":
-        start_pattern = r'(?:tentang\s+)?duduk\s+perkara|posita'
-        end_pattern = r'(?:menimbang|pertimbangan|pengadilan negeri|berdasarkan perma)'
-        max_len = MAX_FACTS_LENGTH
-    elif section_name == "menimbang":
-        start_pattern = r'menimbang|pertimbangan|pengadilan negeri tersebut'
-        end_pattern = r'(?:amar|oleh karena itu|putusan|mengadili)'
-        max_len = MAX_LEGAL_REASONING
-    elif section_name == "amar":
-        start_pattern = r'(?:amar|mengadili|p\s*u\s*t\s*u\s*s\s*a\s*n|dalam perkara|dalam konvensi)'
-        end_pattern = r'(?:atas segala penetapan|demikian putusan|itulah putusannya|biaya perkara|rp\.)'
-        max_len = MAX_DECISION_LENGTH
-    else:
-        return ""
-    
-    # Cari posisi awal section
-    match_start = re.search(start_pattern, text_lower)
-    if not match_start:
-        return ""
-    
-    start_idx = match_start.start()
-    
-    # Cari posisi akhir section
-    match_end = re.search(end_pattern, text_lower[match_start.end():])
-    if match_end:
-        end_idx = match_start.end() + match_end.start()
-    else:
-        end_idx = len(text)
-    
-    section_text = text[start_idx:end_idx].strip()
-    
-    # Bersihkan dan potong
-    section_text = clean_text(section_text)
-    section_text = section_text[:max_len]
-    
-    return section_text
+
+    # --- Cari blok identitas pihak (biasanya di awal putusan) ---
+    # Pola: nama diikuti "selanjutnya disebut penggugat" atau "sebagai penggugat"
+    # atau sebelum kata "melawan"/"lawan"
+    pola_penggugat = [
+        r"([A-Z][A-Za-z0-9\s\.,\-/]+?)\s*,?\s*selanjutnya\s+disebut\s+(?:sebagai\s+)?penggugat",
+        r"([A-Z][A-Za-z0-9\s\.,\-/]+?)\s*(?:dalam hal ini diwakili\s+oleh\s+.+?)?\s*sebagai\s+penggugat",
+        r"penggugat\s*(?:adalah|:)?\s*([A-Z][A-Za-z0-9\s\.,\-/]{3,60})",
+    ]
+    pola_tergugat = [
+        r"([A-Z][A-Za-z0-9\s\.,\-/]+?)\s*,?\s*selanjutnya\s+disebut\s+(?:sebagai\s+)?tergugat",
+        r"([A-Z][A-Za-z0-9\s\.,\-/]+?)\s*(?:dalam hal ini diwakili\s+oleh\s+.+?)?\s*sebagai\s+tergugat",
+        r"tergugat\s*(?:adalah|:)?\s*([A-Z][A-Za-z0-9\s\.,\-/]{3,60})",
+    ]
+
+    # Cari nama penggugat (case-insensitive search, nama diambil dari match group)
+    penggugat_names = []
+    for pola in pola_penggugat:
+        matches = re.findall(pola, text, re.IGNORECASE)
+        penggugat_names.extend([m.strip() for m in matches if len(m.strip()) > 3])
+
+    tergugat_names = []
+    for pola in pola_tergugat:
+        matches = re.findall(pola, text, re.IGNORECASE)
+        tergugat_names.extend([m.strip() for m in matches if len(m.strip()) > 3])
+
+    # Deduplikasi dan batasi panjang nama
+    penggugat_names = list(dict.fromkeys(penggugat_names))[:5]
+    tergugat_names = list(dict.fromkeys(tergugat_names))[:5]
+
+    # Fallback: coba cari dari pola singkat jika tidak ditemukan
+    if not penggugat_names:
+        m = re.search(r"(?:penggugat|pemohon)\s*[:\-]?\s*([A-Z][A-Za-z\s\.]{3,50})",
+                      text, re.IGNORECASE)
+        if m:
+            penggugat_names = [m.group(1).strip()]
+
+    if not tergugat_names:
+        m = re.search(r"(?:tergugat|termohon)\s*[:\-]?\s*([A-Z][A-Za-z\s\.]{3,50})",
+                      text, re.IGNORECASE)
+        if m:
+            tergugat_names = [m.group(1).strip()]
+
+    # Hitung jumlah (penggugat I, II, III dst atau berdasarkan temuan)
+    n_peng = text_lower.count("penggugat") - text_lower.count("penggugat:")
+    n_terg = text_lower.count("tergugat") - text_lower.count("tergugat:")
+    n_peng = max(len(penggugat_names), min(n_peng // 3, 10))
+    n_terg = max(len(tergugat_names), min(n_terg // 3, 10))
+
+    result["penggugat"] = "; ".join(penggugat_names) if penggugat_names else "tidak terdeteksi"
+    result["tergugat"] = "; ".join(tergugat_names) if tergugat_names else "tidak terdeteksi"
+    result["num_penggugat"] = max(1, n_peng) if penggugat_names else 0
+    result["num_tergugat"] = max(1, n_terg) if tergugat_names else 0
+
+    return result
 
 
-def count_referenced_documents(text):
-    """Hitung jumlah dokumen yang direferensikan dalam putusan."""
-    # Pattern untuk referensi dokumen (nomor, tanggal, nama)
+# ----------------------------------------------------------------------------
+# EKSTRAKSI PASAL YANG DIRUJUK
+# Sesuai spesifikasi tugas: kolom "pasal"
+# ----------------------------------------------------------------------------
+def extract_pasal(text: str) -> str:
+    """Ekstrak pasal-pasal hukum yang dirujuk dalam putusan.
+    Return: string dipisah koma, misal 'Pasal 1365 KUHPerdata, Pasal 1243 KUHPerdata'
+    """
     patterns = [
-        r'\bno\.?\s*\d+',           # No. 123
-        r'\bsurat\s+\w+',           # Surat [nama dokumen]
-        r'\bvide\.',                # Vide (latin untuk "lihat")
-        r'\bpasal\s+\d+',           # Pasal 123
-        r'\bpp\s+no\.?\s*\d+',      # PP No. 123
-        r'\bperma\s+no\.?\s*\d+',   # Perma No. 123
-        r'\byurisprudensi\s+',      # Yurisprudensi
+        r"pasal\s+\d+(?:\s+ayat\s+\(\d+\))?\s+(?:jo\.?\s+pasal\s+\d+\s+)?[A-Za-z\.]+(?:\s+\d{4})?",
+        r"pasal\s+\d+(?:\s*[,/]\s*\d+)*\s+[A-Za-z\.]+",
+        r"pasal\s+\d+\s+huruf\s+[a-z]\s+[A-Za-z\.]+",
     ]
-    
-    count = 0
-    for pattern in patterns:
-        matches = re.findall(pattern, text.lower())
-        count += len(matches)
-    
-    # Batasi dan normalisasi (jangan terlalu tinggi karena ada repetisi)
-    return min(count // 5, 20)  # Bagi 5 karena ada banyak repetisi
+
+    found = []
+    for pat in patterns:
+        matches = re.findall(pat, text, re.IGNORECASE)
+        found.extend([m.strip() for m in matches])
+
+    # Normalisasi dan deduplikasi
+    found_normalized = []
+    seen = set()
+    for p in found:
+        key = re.sub(r"\s+", " ", p.lower()).strip()
+        if key not in seen and len(key) > 5:
+            seen.add(key)
+            found_normalized.append(p.strip())
+
+    return ", ".join(found_normalized[:10]) if found_normalized else ""
 
 
-def parse_date(date_str):
-    """Parse tanggal dari berbagai format."""
-    if not date_str or pd.isna(date_str):
-        return None
-    
-    date_str = str(date_str).strip()
-    
-    # List format yang umum
-    formats = [
-        "%d %B %Y",        # 15 April 2026
-        "%d %b %Y",        # 15 Apr 2026
-        "%d-%m-%Y",        # 15-04-2026
-        "%Y-%m-%d",        # 2026-04-15
-        "%d/%m/%Y",        # 15/04/2026
-        "%d Januari %Y",
-        "%d Februari %Y",
-        "%d Maret %Y",
-        "%d April %Y",
-        "%d Mei %Y",
-        "%d Juni %Y",
-        "%d Juli %Y",
-        "%d Agustus %Y",
-        "%d September %Y",
-        "%d Oktober %Y",
-        "%d Nopember %Y",
-        "%d November %Y",
-        "%d Desember %Y",
+# ----------------------------------------------------------------------------
+# EKSTRAKSI RINGKASAN FAKTA
+# ----------------------------------------------------------------------------
+def extract_ringkasan_fakta(text: str, max_chars: int = 800) -> str:
+    """Ekstrak ringkasan fakta dari bagian 'duduk perkara' atau 'menimbang'.
+
+    Prioritas:
+    1. Paragraf setelah 'duduk perkara' atau 'posita'
+    2. Paragraf pertama dari section 'menimbang'
+    3. Fallback: 3 paragraf pertama teks setelah nomor putusan
+    """
+    # Coba cari section duduk perkara
+    pola_sections = [
+        r"duduk\s+perkara\s*\n+((?:.+\n?){1,15})",
+        r"posita\s*\n+((?:.+\n?){1,15})",
+        r"tentang\s+duduk\s+perkara\s*\n+((?:.+\n?){1,15})",
+        r"kronologi\s*\n+((?:.+\n?){1,10})",
     ]
-    
-    for fmt in formats:
-        try:
-            return pd.to_datetime(date_str, format=fmt)
-        except:
-            continue
-    
-    # Fallback: coba parsing otomatis pandas
-    try:
-        return pd.to_datetime(date_str)
-    except:
-        return None
+
+    for pola in pola_sections:
+        m = re.search(pola, text, re.IGNORECASE | re.MULTILINE)
+        if m:
+            ringkasan = m.group(1).strip()
+            if len(ringkasan.split()) > 30:
+                return ringkasan[:max_chars]
+
+    # Fallback: ambil dari 'menimbang' pertama
+    m = re.search(r"menimbang\s*[:,]?\s*(.*?)(?=menimbang|mengadili|memutus)",
+                  text, re.IGNORECASE | re.DOTALL)
+    if m:
+        return m.group(1).strip()[:max_chars]
+
+    # Fallback terakhir: ambil paragraf setelah header putusan
+    lines = [l.strip() for l in text.split("\n") if len(l.strip()) > 50]
+    return " ".join(lines[2:7])[:max_chars] if lines else text[:max_chars]
 
 
-def calculate_process_duration(tanggal_register, tanggal_musyawarah):
-    """Hitung durasi proses (hari) antara tanggal register dan musyawarah."""
-    try:
-        date_reg = parse_date(tanggal_register)
-        date_mus = parse_date(tanggal_musyawarah)
-        
-        if date_reg and date_mus:
-            duration = (date_mus - date_reg).days
-            return max(duration, 0)  # Tidak boleh negatif
-    except:
-        pass
-    
-    return None
+# ----------------------------------------------------------------------------
+# EKSTRAKSI ARGUMEN HUKUM UTAMA
+# ----------------------------------------------------------------------------
+def extract_argumen_hukum(text: str, max_chars: int = 800) -> str:
+    """Ekstrak argumen hukum utama dari section 'menimbang' atau 'pertimbangan hukum'."""
+    pola_sections = [
+        r"pertimbangan\s+hukum\s*\n+((?:.+\n?){1,20})",
+        r"pertimbangan\s+majelis\s*\n+((?:.+\n?){1,20})",
+    ]
+    for pola in pola_sections:
+        m = re.search(pola, text, re.IGNORECASE | re.MULTILINE)
+        if m:
+            argumen = m.group(1).strip()
+            if len(argumen.split()) > 20:
+                return argumen[:max_chars]
 
-
-def extract_case_representation(case_id, row, case_text):
-    """
-    Extract full case representation untuk satu kasus.
-    
-    Args:
-        case_id: ID kasus
-        row: Row dari metadata_raw.csv (pandas Series)
-        case_text: Teks mentah kasus dari file .txt
-    
-    Returns:
-        dict dengan representasi terstruktur kasus
-    """
-    
-    # ---- Ekstrak metadata dasar ----
-    representation = {
-        "case_id": case_id,
-        "no_perkara": row.get("no_perkara", ""),
-        "jenis_perkara": row.get("jenis_perkara", ""),
-        "tanggal_register": row.get("tanggal_register", ""),
-        "tanggal_musyawarah": row.get("tanggal_musyawarah", ""),
-    }
-    
-    # ---- Ekstrak bagian-bagian kunci ----
-    facts = extract_section(case_text, "duduk_perkara")
-    legal_reasoning = extract_section(case_text, "menimbang")
-    decision = extract_section(case_text, "amar")
-    
-    representation.update({
-        "facts_summary": facts[:MAX_FACTS_LENGTH],
-        "legal_reasoning_summary": legal_reasoning[:MAX_LEGAL_REASONING],
-        "decision_summary": decision[:MAX_DECISION_LENGTH],
-    })
-    
-    # ---- Feature engineering: Ekstrak fakta kunci ----
-    key_facts = extract_key_facts(case_text)
-    representation["key_facts_bukti"] = "|".join(key_facts["bukti_utama"][:3]) if key_facts["bukti_utama"] else ""
-    representation["objek_sengketa"] = key_facts["objek_sengketa"][:300]
-    representation["dakwaan_utama"] = key_facts["dakwaan_utama"][:300]
-    
-    # ---- Feature engineering: Ekstrak pasal-pasal penting ----
-    top_pasal = extract_important_pasal(case_text)
-    representation["top_pasal_referenced"] = "|".join(top_pasal) if top_pasal else ""
-    
-    # ---- Feature engineering: Pihak ----
-    party_features = extract_parties(case_text)
-    representation.update(party_features)
-    
-    # ---- Feature engineering: Jenis putusan ----
-    decision_type = extract_decision_type(decision)
-    representation["decision_type"] = decision_type
-    
-    # ---- Feature engineering: Keyword hukum ----
-    keywords = extract_legal_keywords(case_text)
-    representation.update(keywords)
-    
-    # ---- Feature engineering: Jumlah dokumen ----
-    representation["num_referenced_docs"] = count_referenced_documents(case_text)
-    
-    # ---- Feature engineering: Durasi proses ----
-    duration = calculate_process_duration(
-        row.get("tanggal_register"),
-        row.get("tanggal_musyawarah")
+    # Kumpulkan semua kalimat 'menimbang'
+    menimbang_parts = re.findall(
+        r"menimbang\s*,?\s*bahwa\s+(.+?)(?=menimbang|mengadili|;|\n\n)",
+        text, re.IGNORECASE | re.DOTALL
     )
-    representation["process_duration_days"] = duration
-    
-    # ---- Feature engineering: Panjang dokumen ----
-    representation["doc_length_words"] = row.get("jumlah_kata", 0)
-    representation["doc_length_tokens"] = row.get("jumlah_token", 0)
-    representation["text_completeness"] = row.get("keutuhan_teks", 0.0)
-    
-    # ---- Feature engineering: QA Pairs ----
-    qa_pairs = generate_qa_pairs(representation)
-    representation["qa_pairs_json"] = json.dumps(qa_pairs, ensure_ascii=False)
-    
-    # ---- Metadata tambahan ----
-    representation["pengadilan"] = row.get("pengadilan", "PN Bandung")
-    representation["hakim_ketua"] = row.get("hakim_ketua", "")
-    representation["klasifikasi"] = row.get("klasifikasi", "")
-    representation["kata_kunci"] = row.get("kata_kunci", "")
-    
-    return representation
+    if menimbang_parts:
+        combined = " | ".join([p.strip() for p in menimbang_parts[:3]])
+        return combined[:max_chars]
+
+    return ""
 
 
-# ============================================================================
-# MAIN PROCESSING
-# ============================================================================
+# ----------------------------------------------------------------------------
+# EKSTRAKSI JENIS PUTUSAN (label untuk model)
+# ----------------------------------------------------------------------------
+def extract_decision_type(amar: str, text: str) -> str:
+    """Klasifikasi jenis putusan dari kolom amar atau teks."""
+    amar_lower = (amar or "").lower()
+    text_lower = text.lower()
 
+    sources = [amar_lower] + [text_lower]
+    for src in sources:
+        if any(k in src for k in ["dikabulkan untuk seluruhnya", "dikabulkan seluruhnya"]):
+            return "dikabulkan_seluruhnya"
+        if any(k in src for k in ["dikabulkan untuk sebagian", "dikabulkan sebagian"]):
+            return "dikabulkan_sebagian"
+        if any(k in src for k in ["ditolak", "tidak dapat diterima"]):
+            return "ditolak"
+        if "gugatan tidak dapat diterima" in src:
+            return "niet_ontvankelijke_verklaard"
+        if "gugur" in src:
+            return "gugur"
+        if "dikabulkan" in src:
+            return "dikabulkan"
+
+    return "lainnya"
+
+
+# ----------------------------------------------------------------------------
+# MAIN: PROSES SEMUA CASE
+# ----------------------------------------------------------------------------
 def main():
-    logger.info("=" * 80)
-    logger.info("Tahap 2: Case Representation - START")
-    logger.info("=" * 80)
-    
-    # ---- Baca metadata ----
-    print("[1] Membaca metadata_raw.csv...")
-    try:
-        metadata_df = pd.read_csv(METADATA_CSV)
-        logger.info(f"Metadata loaded: {len(metadata_df)} kasus")
-        print(f"    ✓ Loaded {len(metadata_df)} cases")
-    except Exception as e:
-        logger.error(f"Error loading metadata: {e}")
-        print(f"    ✗ Error: {e}")
+    log("=== TAHAP 2: Case Representation ===")
+    log("Domain: Perdata - Perbuatan Melawan Hukum (PMH) | Pengadilan: PN Bandung")
+
+    # Load metadata
+    if not os.path.exists(METADATA_CSV):
+        log(f"[FATAL] {METADATA_CSV} tidak ditemukan. Jalankan 01_scraping.py dulu.")
         return
-    
-    # ---- Proses setiap kasus ----
-    print(f"[2] Memproses representasi kasus ({len(metadata_df)} kasus)...")
-    
-    representations = []
-    errors = []
-    
-    for idx, (_, row) in enumerate(metadata_df.iterrows()):
-        case_id = row.get("case_id", f"case_{idx}")
-        
-        # Baca file teks kasus
-        case_file = os.path.join(RAW_DIR, f"{case_id}.txt")
-        
-        if not os.path.exists(case_file):
-            msg = f"Case file not found: {case_file}"
-            logger.warning(msg)
-            errors.append({"case_id": case_id, "error": msg})
+
+    df_meta = pd.read_csv(METADATA_CSV)
+    # Hanya proses dokumen valid
+    df_valid = df_meta[df_meta["valid_min_200_kata"] == True].copy()
+    log(f"Total dokumen valid yang akan diproses: {len(df_valid)}")
+
+    records = []
+    for i, row in enumerate(df_valid.itertuples(), start=1):
+        case_id = row.case_id
+        raw_path = os.path.join(RAW_DIR, f"{case_id}.txt")
+        text = read_raw_text(case_id)
+
+        if not text:
+            log(f"  [{i}/{len(df_valid)}] SKIP {case_id}: file raw tidak ditemukan")
             continue
-        
-        try:
-            with open(case_file, 'r', encoding='utf-8') as f:
-                case_text = f.read()
-        except Exception as e:
-            msg = f"Error reading case file {case_id}: {e}"
-            logger.error(msg)
-            errors.append({"case_id": case_id, "error": msg})
-            continue
-        
-        # Extract representasi
-        try:
-            rep = extract_case_representation(case_id, row, case_text)
-            representations.append(rep)
-        except Exception as e:
-            msg = f"Error extracting representation for {case_id}: {e}"
-            logger.error(msg)
-            errors.append({"case_id": case_id, "error": msg})
-            continue
-        
-        # Progress
-        if (idx + 1) % 10 == 0:
-            print(f"    Processed {idx + 1}/{len(metadata_df)} cases...")
-    
-    if not representations:
-        print("    ✗ No cases successfully processed!")
-        logger.error("No cases successfully processed")
-        return
-    
-    print(f"    ✓ Successfully processed {len(representations)} cases")
-    
-    # ---- Simpan ke CSV ----
-    print(f"[3] Menyimpan ke {OUTPUT_CSV}...")
-    try:
-        df_cases = pd.DataFrame(representations)
-        df_cases.to_csv(OUTPUT_CSV, index=False, encoding='utf-8')
-        logger.info(f"Cases representation saved to {OUTPUT_CSV}")
-        print(f"    ✓ Saved {len(df_cases)} cases to CSV")
-    except Exception as e:
-        logger.error(f"Error saving CSV: {e}")
-        print(f"    ✗ Error: {e}")
-        return
-    
-    # ---- Simpan ke JSON (optional) ----
-    print(f"[4] Menyimpan ke {OUTPUT_JSON}...")
-    try:
-        with open(OUTPUT_JSON, 'w', encoding='utf-8') as f:
-            json.dump(representations, f, ensure_ascii=False, indent=2)
-        logger.info(f"Cases representation saved to {OUTPUT_JSON}")
-        print(f"    ✓ Saved {len(representations)} cases to JSON")
-    except Exception as e:
-        logger.error(f"Error saving JSON: {e}")
-        print(f"    ✗ Error: {e}")
-    
-    # ---- Summary dan error report ----
-    print(f"\n[5] Summary:")
-    print(f"    Total cases processed: {len(representations)}")
-    print(f"    Total errors: {len(errors)}")
-    
-    if errors:
-        print(f"\n[6] Error cases ({len(errors)}):")
-        for err in errors[:5]:  # Tampilkan 5 error pertama
-            print(f"    - {err['case_id']}: {err['error']}")
-        if len(errors) > 5:
-            print(f"    ... and {len(errors) - 5} more errors")
-    
-    # ---- Statistics ----
-    print(f"\n[7] Representation Statistics:")
-    print(f"    Average doc length: {df_cases['doc_length_words'].mean():.0f} words")
-    print(f"    Average parties: {df_cases['total_pihak'].mean():.1f} people")
-    print(f"    Average process duration: {df_cases['process_duration_days'].mean():.0f} days")
-    print(f"    Decision types:")
-    for dec_type, count in df_cases['decision_type'].value_counts().items():
-        print(f"      - {dec_type}: {count}")
-    
-    # ---- Kolom baru yang ditambahkan ----
-    print(f"\n[8] Enhanced Features:")
-    print(f"    ✓ Key facts extracted (bukti utama, objek sengketa, dakwaan)")
-    print(f"    ✓ Top pasal referenced: {df_cases['top_pasal_referenced'].str.len().mean():.0f} chars avg")
-    print(f"    ✓ QA pairs generated: {df_cases['qa_pairs_json'].str.len().mean():.0f} chars avg")
-    
-    # ---- Sample QA pairs untuk 1 kasus ----
-    if len(df_cases) > 0:
-        sample_qa = json.loads(df_cases.iloc[0]['qa_pairs_json'])
-        print(f"\n[9] Sample QA Pairs (Case 1):")
-        for i, qa in enumerate(sample_qa[:3], 1):
-            print(f"    Q{i}: {qa['question']}")
-            print(f"    A{i}: {qa['answer'][:80]}...")
-    
-    logger.info("=" * 80)
-    logger.info("Tahap 2: Case Representation - COMPLETED")
-    logger.info("=" * 80)
-    print("\n✓ Case Representation tahap selesai!")
+
+        log(f"  [{i}/{len(df_valid)}] memproses {case_id}...")
+
+        # Ekstraksi pihak (nama penggugat & tergugat)
+        pihak = extract_pihak(text)
+
+        # Ekstraksi konten kunci
+        ringkasan_fakta = extract_ringkasan_fakta(text)
+        argumen_hukum = extract_argumen_hukum(text)
+        pasal = extract_pasal(text)
+
+        # Jenis putusan (label untuk model CBR)
+        amar = str(row.amar) if hasattr(row, "amar") else ""
+        decision_type = extract_decision_type(amar, text)
+
+        # text_full: preview teks bersih (sesuai spesifikasi kolom)
+        # Teks lengkap tetap ada di data/raw/{case_id}.txt
+        text_full_preview = text[:MAX_TEXT_FULL_CHARS].replace("\n", " ")
+
+        record = {
+            # --- Identitas & metadata dasar ---
+            "case_id": case_id,
+            "no_perkara": getattr(row, "no_perkara", ""),
+            "tanggal": getattr(row, "tanggal_register", ""),
+            "jenis_perkara": getattr(row, "jenis_perkara", ""),
+            "pengadilan": getattr(row, "pengadilan", ""),
+            "hakim_ketua": getattr(row, "hakim_ketua", ""),
+            "klasifikasi": getattr(row, "klasifikasi", ""),
+
+            # --- Pihak (NAMA, bukan hanya jumlah) ---
+            "penggugat": pihak["penggugat"],
+            "tergugat": pihak["tergugat"],
+            "num_penggugat": pihak["num_penggugat"],
+            "num_tergugat": pihak["num_tergugat"],
+
+            # --- Konten kunci ---
+            "ringkasan_fakta": ringkasan_fakta,
+            "argumen_hukum": argumen_hukum,
+            "pasal": pasal,               # kolom eksplisit sesuai spesifikasi
+            "amar_putusan": amar,
+            "decision_type": decision_type,  # label untuk model
+
+            # --- Feature engineering ---
+            "jumlah_kata": getattr(row, "jumlah_kata", len(text.split())),
+            "jumlah_token": getattr(row, "jumlah_token", 0),
+            "panjang_ringkasan_fakta": len(ringkasan_fakta.split()),
+            "panjang_argumen_hukum": len(argumen_hukum.split()),
+            "jumlah_pasal_dirujuk": len([p for p in pasal.split(",") if p.strip()]),
+
+            # --- text_full (sesuai spesifikasi kolom di tugas) ---
+            "text_full": text_full_preview,
+            "raw_file_path": raw_path,     # path ke teks lengkap
+        }
+
+        records.append(record)
+
+    df_out = pd.DataFrame(records)
+
+    # Simpan ke CSV dan JSON
+    df_out.to_csv(OUTPUT_CSV, index=False, encoding="utf-8")
+    df_out.to_json(OUTPUT_JSON, orient="records", force_ascii=False, indent=2)
+
+    log(f"\n=== SELESAI: {len(df_out)} case berhasil direpresentasikan ===")
+    log(f"Output CSV  -> {OUTPUT_CSV}")
+    log(f"Output JSON -> {OUTPUT_JSON}")
+
+    # Ringkasan distribusi decision_type (label)
+    if "decision_type" in df_out.columns:
+        log("\nDistribusi decision_type (label untuk model):")
+        for dtype, count in df_out["decision_type"].value_counts().items():
+            log(f"  {dtype}: {count} dokumen")
+
+    # Cek kelengkapan pihak
+    n_pihak_ok = (df_out["penggugat"] != "tidak terdeteksi").sum()
+    log(f"\nNama penggugat berhasil diekstrak: {n_pihak_ok}/{len(df_out)} dokumen")
+    n_tergugat_ok = (df_out["tergugat"] != "tidak terdeteksi").sum()
+    log(f"Nama tergugat berhasil diekstrak : {n_tergugat_ok}/{len(df_out)} dokumen")
 
 
 if __name__ == "__main__":

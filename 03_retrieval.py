@@ -1,355 +1,466 @@
 """
-Tahap 3: Case Retrieval
-Tujuan: Menemukan kasus lama yang paling mirip dengan query kasus baru
-Pendekatan: 
-  1. TF-IDF + Cosine Similarity
-  2. BERT Embedding (Lightweight)
+03_retrieval.py
+================
+Tahap 3 (Case Retrieval) - Tugas CBR Penalaran Komputer
+Domain: Perdata - Perbuatan Melawan Hukum (PMH) | Pengadilan: PN Bandung
+
+Pendekatan yang digunakan:
+  1. TF-IDF + SVM   (classification/retrieval, sesuai spesifikasi)
+  2. TF-IDF + Naive Bayes (alternatif ML)
+  3. TF-IDF + Cosine Similarity (retrieval langsung)
+  4. BERT (all-MiniLM-L6-v2) + Cosine Similarity
+
+Output:
+  models/tfidf_vectorizer.pkl       -> TF-IDF vectorizer
+  models/svm_model.pkl              -> model SVM
+  models/nb_model.pkl               -> model Naive Bayes
+  models/bert_embeddings.npy        -> BERT embeddings semua dokumen
+  models/train_indices.json         -> indeks train split (dipakai 04_predict.py)
+  models/test_indices.json          -> indeks test split
+  models/case_ids.json              -> urutan case_id sesuai embeddings
+  data/eval/queries.json            -> 5-10 query uji + ground-truth case_id
+  data/eval/retrieval_results.csv   -> hasil retrieval semua model di test set
 """
 
-import pandas as pd
-import numpy as np
-import joblib
-from pathlib import Path
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.model_selection import train_test_split
-from sklearn.metrics.pairwise import cosine_similarity
+import os
 import json
-from datetime import datetime
+import joblib
+import logging
 import warnings
-warnings.filterwarnings('ignore')
 
-# ============================================================================
-# SETUP
-# ============================================================================
-
-DATA_DIR = Path("data/processed")
-MODELS_DIR = Path("data/models")
-MODELS_DIR.mkdir(exist_ok=True)
-
-cases = pd.read_csv(DATA_DIR / "cases.csv")
-print(f"[1] Loaded {len(cases)} cases")
-
-# ============================================================================
-# 1. REPRESENTASI VEKTOR (TF-IDF)
-# ============================================================================
-
-# Gabungkan text untuk vectorization
-cases['combined_text'] = (
-    cases['facts_summary'].fillna('') + ' ' + 
-    cases['legal_reasoning_summary'].fillna('')
-).str.strip()
-
-# TF-IDF Vectorizer
-vectorizer = TfidfVectorizer(
-    max_features=1000,
-    ngram_range=(1, 2),
-    min_df=2,
-    max_df=0.8
+import numpy as np
+import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.svm import LinearSVC
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.preprocessing import LabelEncoder, MinMaxScaler
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import (
+    accuracy_score, precision_score, recall_score, f1_score,
+    classification_report
 )
+from sklearn.metrics.pairwise import cosine_similarity
 
-X = vectorizer.fit_transform(cases['combined_text'])
-y = cases['jenis_perkara']
+warnings.filterwarnings("ignore")
 
-print(f"[2] TF-IDF vectorization: {X.shape} (samples × features)")
-print(f"    Vocabulary size: {len(vectorizer.get_feature_names_out())}")
-print(f"    Unique case types: {y.nunique()}")
-
-# ============================================================================
-# 2. SPLITTING DATA (80:20)
-# ============================================================================
-
-indices = np.arange(len(cases))
-idx_train, idx_test = train_test_split(
-    indices,
-    test_size=0.2,
-    random_state=42
-)
-
-X_train = X[idx_train]
-X_test = X[idx_test]
-
-print(f"[3] Train-Test Split (80:20)")
-print(f"    Train: {X_train.shape[0]} cases (retrieval database)")
-print(f"    Test:  {X_test.shape[0]} cases (query evaluation)")
-
-# ============================================================================
-# 3. BERT EMBEDDING (Lightweight)
-# ============================================================================
-
-print("[3b] Loading BERT model (sentence-transformers)...")
-
+# ── Coba import sentence-transformers (BERT), opsional ──────────────────────
 try:
     from sentence_transformers import SentenceTransformer
+    BERT_AVAILABLE = True
 except ImportError:
-    print("    Installing sentence-transformers...")
-    import subprocess
-    subprocess.check_call(["pip", "install", "sentence-transformers", "-q"])
-    from sentence_transformers import SentenceTransformer
+    BERT_AVAILABLE = False
 
-# Load model
-bert_model = SentenceTransformer('all-MiniLM-L6-v2')
+# ----------------------------------------------------------------------------
+# KONFIGURASI
+# ----------------------------------------------------------------------------
+PROCESSED_DIR = "data/processed"
+MODELS_DIR    = "models"
+EVAL_DIR      = "data/eval"
+LOG_DIR       = "logs"
 
-print(f"    Model: all-MiniLM-L6-v2 (lightweight)")
-print(f"    Embedding dimension: 384")
+CASES_CSV     = f"{PROCESSED_DIR}/cases.csv"
+OUTPUT_QUERIES = f"{EVAL_DIR}/queries.json"
+OUTPUT_RESULTS = f"{EVAL_DIR}/retrieval_results.csv"
 
-# Encode training cases (convert to string, handle NaN)
-bert_train_texts = cases.iloc[idx_train]['facts_summary'].fillna('').astype(str).tolist()
-bert_train_embeddings = bert_model.encode(bert_train_texts, show_progress_bar=False)
+BERT_MODEL_NAME = "all-MiniLM-L6-v2"   # ringan, cocok untuk dokumen hukum
+TEST_SIZE       = 0.2                    # rasio data test (80:20)
+RANDOM_STATE    = 42
+TOP_K           = 5                      # jumlah kasus mirip yang dikembalikan
+N_QUERY_SAMPLES = 10                     # jumlah query uji di queries.json
 
-print(f"    BERT embeddings: {bert_train_embeddings.shape}")
+for d in (MODELS_DIR, EVAL_DIR, LOG_DIR):
+    os.makedirs(d, exist_ok=True)
 
-# ============================================================================
-# 3c. COMPUTING SIMILARITY (BOTH METHODS)
-# ============================================================================
+logging.basicConfig(
+    filename=f"{LOG_DIR}/retrieval.log",
+    level=logging.INFO,
+    format="%(asctime)s | %(levelname)s | %(message)s",
+)
 
-print("[4] Computing similarity metrics...")
-# Pre-compute all similarities untuk efficient retrieval
 
-# TF-IDF similarities
-tfidf_similarities = cosine_similarity(X, X_train)
+def log(msg):
+    print(msg)
+    logging.info(msg)
 
-# BERT similarities (convert all text to string, handle NaN)
-bert_all_texts = cases['facts_summary'].fillna('').astype(str).tolist()
-bert_all_embeddings = bert_model.encode(bert_all_texts, show_progress_bar=False)
-bert_similarities = cosine_similarity(bert_all_embeddings, bert_train_embeddings)
 
-print(f"    TF-IDF similarity matrix: {tfidf_similarities.shape}")
-print(f"    BERT similarity matrix: {bert_similarities.shape}")
+def normalize_decision_type(label: str) -> str:
+    """Gabungkan label putusan yang langka agar tiap kelas punya >=2 anggota.
+    Mengatasi error stratified split: 'least populated class has only 1 member'."""
+    l = str(label).strip().lower()
+    if l.startswith("dikabulkan"):
+        return "dikabulkan"
+    if l in ("ditolak", "tidak dapat diterima", "niet_ontvankelijke_verklaard"):
+        return "ditolak"
+    return "lainnya"
 
-# ============================================================================
-# 4. EVALUASI MODEL (Retrieval Performance)
-# ============================================================================
 
-def evaluate_retrieval(similarity_matrix, method_name, k_values=[1, 3, 5]):
-    """Hitung retrieval performance metrics"""
-    results = {}
-    
-    for k in k_values:
-        hit = 0
-        for test_idx in idx_test:
-            # Get similarity untuk test case vs semua training
-            similarities = similarity_matrix[test_idx]
-            top_k_train_idx = np.argsort(similarities)[-k:]
-            
-            # Check apakah ada same case type dalam top-k
-            test_type = cases.iloc[test_idx]['jenis_perkara']
-            top_k_types = cases.iloc[idx_train[top_k_train_idx]]['jenis_perkara'].values
-            
-            if test_type in top_k_types:
-                hit += 1
-        
-        recall_at_k = hit / len(idx_test)
-        results[f'Recall@{k}'] = recall_at_k
-    
-    return results
-
-# Evaluate both methods
-tfidf_results = evaluate_retrieval(tfidf_similarities, "TF-IDF", k_values=[1, 3, 5])
-bert_results = evaluate_retrieval(bert_similarities, "BERT", k_values=[1, 3, 5])
-
-print(f"[5] Retrieval Evaluation")
-print(f"    TF-IDF + Cosine Similarity:")
-for metric, score in tfidf_results.items():
-    print(f"      {metric}: {score:.4f}")
-
-print(f"    BERT Embedding + Cosine Similarity:")
-for metric, score in bert_results.items():
-    print(f"      {metric}: {score:.4f}")
-
-# ============================================================================
-# 5. SIMPAN MODEL & VECTORIZER
-# ============================================================================
-
-joblib.dump(vectorizer, MODELS_DIR / "tfidf_vectorizer.pkl")
-joblib.dump(X_train, MODELS_DIR / "tfidf_train_vectors.pkl")
-joblib.dump(bert_model, MODELS_DIR / "bert_model.pkl")
-joblib.dump(bert_train_embeddings, MODELS_DIR / "bert_train_embeddings.npy")
-
-print(f"[6] Models saved:")
-print(f"    - {MODELS_DIR}/tfidf_vectorizer.pkl")
-print(f"    - {MODELS_DIR}/tfidf_train_vectors.pkl")
-print(f"    - {MODELS_DIR}/bert_model.pkl")
-print(f"    - {MODELS_DIR}/bert_train_embeddings.npy")
-
-# ============================================================================
-# 6. FUNGSI RETRIEVAL
-# ============================================================================
-
-def retrieve_similar_cases(query_text, k=5, method='tfidf', include_scores=True):
+# ----------------------------------------------------------------------------
+# FUNGSI RETRIEVE (sesuai signature spesifikasi tugas)
+# ----------------------------------------------------------------------------
+def retrieve(query: str, k: int = TOP_K,
+             vectorizer=None, tfidf_matrix=None,
+             bert_model=None, bert_embeddings=None,
+             case_ids=None, method="tfidf") -> list:
     """
-    Retrieve k cases paling mirip dengan query text
-    
-    Args:
-        query_text: Text input dari kasus baru
-        k: Jumlah cases yang di-retrieve
-        method: 'tfidf' atau 'bert'
-        include_scores: Include similarity scores
-    
-    Returns:
-        DataFrame dengan top-k similar cases dan similarity scores
+    Temukan top-k kasus paling mirip dengan query.
+
+    Params:
+        query      : teks query kasus baru
+        k          : jumlah kasus yang dikembalikan
+        method     : 'tfidf' atau 'bert'
+
+    Return:
+        list of case_id (top-k paling mirip)
     """
-    if method == 'tfidf':
-        # TF-IDF retrieval
-        query_vec = vectorizer.transform([query_text])
-        similarities = cosine_similarity(query_vec, X_train)[0]
-    else:
-        # BERT retrieval (ensure string input)
-        query_text_clean = str(query_text).strip()
-        query_embedding = bert_model.encode([query_text_clean])[0]
-        similarities = cosine_similarity([query_embedding], bert_train_embeddings)[0]
-    
-    # Get top-k indices (sorted descending)
-    top_indices = np.argsort(similarities)[-k:][::-1]
-    
-    # Map back ke original case indices
-    retrieved_case_indices = idx_train[top_indices]
-    
-    result = cases.iloc[retrieved_case_indices][
-        ['case_id', 'no_perkara', 'jenis_perkara', 'tanggal_register', 'facts_summary']
-    ].copy()
-    
-    if include_scores:
-        result['similarity_score'] = similarities[top_indices]
-        result['method'] = method.upper()
-    
-    return result
+    if method == "tfidf" and vectorizer is not None and tfidf_matrix is not None:
+        # 1) Pre-process query
+        query_clean = query.lower().strip()
+        # 2) Hitung vektor query
+        query_vec = vectorizer.transform([query_clean])
+        # 3) Hitung cosine similarity
+        sims = cosine_similarity(query_vec, tfidf_matrix).flatten()
+        # 4) Kembalikan top-k case_id
+        top_indices = np.argsort(sims)[::-1][:k]
+        return [case_ids[i] for i in top_indices]
+
+    elif method == "bert" and bert_model is not None and bert_embeddings is not None:
+        # 1) Pre-process query
+        query_clean = query.lower().strip()
+        # 2) Hitung vektor query
+        query_emb = bert_model.encode([query_clean], normalize_embeddings=True)
+        # 3) Hitung cosine similarity
+        sims = cosine_similarity(query_emb, bert_embeddings).flatten()
+        # 4) Kembalikan top-k case_id
+        top_indices = np.argsort(sims)[::-1][:k]
+        return [case_ids[i] for i in top_indices]
+
+    return []
 
 
-def retrieve(query: str, k: int = 5) -> list[str]:
-    """
-    Retrieve top-k case_id paling mirip untuk sebuah query.
-    Default memakai BERT karena dipakai juga oleh Tahap 4.
-    """
-    query_text = str(query).strip()
-    if not query_text:
-        return []
+# ----------------------------------------------------------------------------
+# EVALUASI RETRIEVAL: Precision@k, Recall@k, F1@k
+# (ground-truth = kasus dengan decision_type yang sama)
+# ----------------------------------------------------------------------------
+def evaluate_retrieval(test_indices, case_ids, labels, sim_matrix, k=TOP_K):
+    """Hitung Precision@k, Recall@k, F1@k untuk retrieval berbasis similarity."""
+    precisions, recalls, f1s = [], [], []
 
-    retrieved = retrieve_similar_cases(query_text, k=k, method='bert', include_scores=False)
-    return retrieved['case_id'].tolist()
+    for idx in test_indices:
+        true_label = labels[idx]
+        # ground-truth: semua kasus dengan label sama (di luar dirinya sendiri)
+        relevant = set(
+            i for i in range(len(labels))
+            if labels[i] == true_label and i != idx
+        )
+        if not relevant:
+            continue
 
+        # retrieved: top-k berdasarkan similarity (exclude dirinya sendiri)
+        sims = sim_matrix[idx].copy()
+        sims[idx] = -1  # exclude self
+        top_k_idx = set(np.argsort(sims)[::-1][:k])
 
-def retrieve_similar_cases_from_file(case_id, k=5, method='tfidf', field='facts_summary'):
-    """
-    Retrieve cases mirip dengan case yang ada di database
-    
-    Args:
-        case_id: ID dari case dalam database
-        k: Jumlah cases untuk di-retrieve
-        method: 'tfidf' atau 'bert'
-        field: Field mana yang di-gunakan
-    
-    Returns:
-        DataFrame dengan top-k similar cases
-    """
-    case = cases[cases['case_id'] == case_id]
-    if case.empty:
-        print(f"Case {case_id} not found")
-        return pd.DataFrame()
-    
-    query_text = case[field].iloc[0]
-    return retrieve_similar_cases(query_text, k=k, method=method, include_scores=True)
+        tp = len(top_k_idx & relevant)
+        precision_k = tp / k
+        recall_k = tp / len(relevant) if relevant else 0
+        f1_k = (2 * precision_k * recall_k / (precision_k + recall_k)
+                if (precision_k + recall_k) > 0 else 0)
 
+        precisions.append(precision_k)
+        recalls.append(recall_k)
+        f1s.append(f1_k)
 
-# ============================================================================
-# 7. TEST RETRIEVAL
-# ============================================================================
-
-print("\n[7] Testing Retrieval Function")
-
-# Sample query dari test data (ensure valid text)
-valid_test_indices = [i for i in idx_test if isinstance(cases.iloc[i]['facts_summary'], str)]
-if not valid_test_indices:
-    valid_test_indices = [idx_test[0]]
-    
-sample_test_idx = valid_test_indices[0]
-sample_case = cases.iloc[sample_test_idx]
-sample_text = str(sample_case['facts_summary']).strip()
-
-print(f"\n    Query Case: {sample_case['no_perkara']}")
-print(f"    Type: {sample_case['jenis_perkara']}")
-print(f"    Text preview: {sample_text[:80]}...")
-
-# Test TF-IDF
-retrieved_tfidf = retrieve_similar_cases(sample_text, k=3, method='tfidf', include_scores=True)
-print(f"\n    Top 3 Similar Cases (TF-IDF):")
-for idx, row in retrieved_tfidf.iterrows():
-    print(f"      - {row['no_perkara']} (similarity: {row['similarity_score']:.4f})")
-
-# Test BERT
-retrieved_bert = retrieve_similar_cases(sample_text, k=3, method='bert', include_scores=True)
-print(f"\n    Top 3 Similar Cases (BERT):")
-for idx, row in retrieved_bert.iterrows():
-    print(f"      - {row['no_perkara']} (similarity: {row['similarity_score']:.4f})")
-
-# ============================================================================
-# 8. SIMPAN METADATA
-# ============================================================================
-
-retrieval_metadata = {
-    "timestamp": datetime.now().isoformat(),
-    "approaches": {
-        "tfidf": {
-            "method": "TF-IDF + Cosine Similarity",
-            "features": int(X.shape[1]),
-            "metrics": tfidf_results
-        },
-        "bert": {
-            "method": "BERT (all-MiniLM-L6-v2) + Cosine Similarity",
-            "dimension": 384,
-            "metrics": bert_results
-        }
-    },
-    "total_cases": len(cases),
-    "train_cases": len(idx_train),
-    "test_cases": len(idx_test),
-    "unique_case_types": int(y.nunique()),
-    "test_case_sample": {
-        "case_id": sample_case['case_id'],
-        "no_perkara": sample_case['no_perkara'],
-        "retrieved_top_3_tfidf": retrieved_tfidf[['no_perkara', 'similarity_score']].to_dict(orient='records'),
-        "retrieved_top_3_bert": retrieved_bert[['no_perkara', 'similarity_score']].to_dict(orient='records')
+    return {
+        f"precision@{k}": round(np.mean(precisions), 4) if precisions else 0,
+        f"recall@{k}":    round(np.mean(recalls), 4) if recalls else 0,
+        f"f1@{k}":        round(np.mean(f1s), 4) if f1s else 0,
     }
-}
 
-with open(DATA_DIR / "retrieval_metadata.json", "w") as f:
-    json.dump(retrieval_metadata, f, indent=2, ensure_ascii=False)
 
-print(f"\n[8] Metadata saved: data/processed/retrieval_metadata.json")
+# ----------------------------------------------------------------------------
+# BUAT queries.json (output wajib Tahap 3)
+# ----------------------------------------------------------------------------
+def generate_queries_json(df_test, case_ids, labels, tfidf_matrix,
+                          vectorizer, bert_embeddings=None, bert_model=None):
+    """
+    Buat file queries.json berisi N_QUERY_SAMPLES query uji beserta:
+    - teks query (diambil dari ringkasan_fakta dokumen test)
+    - ground-truth case_id (dokumen itu sendiri)
+    - expected_similar: case_id yang punya decision_type sama
+    - top5_tfidf: hasil retrieval TF-IDF
+    - top5_bert: hasil retrieval BERT (jika tersedia)
+    """
+    queries = []
+    sample_df = df_test.sample(min(N_QUERY_SAMPLES, len(df_test)),
+                                random_state=RANDOM_STATE)
 
-# ============================================================================
-# SUMMARY
-# ============================================================================
+    for _, row in sample_df.iterrows():
+        query_text = str(row.get("ringkasan_fakta", "")) or str(row.get("text_full", ""))
+        query_text = query_text[:500]  # batasi panjang query
 
-print("\n" + "="*70)
-print("TAHAP 3 COMPLETE: Case Retrieval (TF-IDF & BERT)")
-print("="*70)
+        case_id = row["case_id"]
+        label = row["decision_type"]
 
-print("\n  [1] TF-IDF + Cosine Similarity")
-print(f"      Features: {X.shape[1]}")
-for metric, score in tfidf_results.items():
-    print(f"      {metric}: {score:.4f}")
+        # Expected similar: case_id dengan label yang sama
+        expected = list(df_test[
+            (df_test["decision_type"] == label) &
+            (df_test["case_id"] != case_id)
+        ]["case_id"])[:5]
 
-print("\n  [2] BERT Embedding (all-MiniLM-L6-v2) + Cosine Similarity")
-print(f"      Dimension: 384")
-for metric, score in bert_results.items():
-    print(f"      {metric}: {score:.4f}")
+        # Hasil retrieval TF-IDF
+        top_tfidf = retrieve(
+            query_text, k=TOP_K,
+            vectorizer=vectorizer,
+            tfidf_matrix=tfidf_matrix,
+            case_ids=case_ids,
+            method="tfidf"
+        )
 
-print(f"\n  [3] Data Configuration")
-print(f"      Train: {len(idx_train)} cases")
-print(f"      Test: {len(idx_test)} cases (80:20 split)")
-print(f"      Unique types: {int(y.nunique())}")
+        # Hasil retrieval BERT (jika tersedia)
+        top_bert = []
+        if BERT_AVAILABLE and bert_model is not None and bert_embeddings is not None:
+            top_bert = retrieve(
+                query_text, k=TOP_K,
+                bert_model=bert_model,
+                bert_embeddings=bert_embeddings,
+                case_ids=case_ids,
+                method="bert"
+            )
 
-print(f"\n  [4] Models saved: data/models/")
-print(f"      - tfidf_vectorizer.pkl")
-print(f"      - tfidf_train_vectors.pkl")
-print(f"      - bert_model.pkl")
-print(f"      - bert_train_embeddings.npy")
+        queries.append({
+            "query_id": f"q_{case_id[:20]}",
+            "case_id": case_id,
+            "no_perkara": row.get("no_perkara", ""),
+            "decision_type": label,
+            "query_text": query_text,
+            "ground_truth_case_id": case_id,
+            "expected_similar_case_ids": expected,
+            "top5_tfidf": top_tfidf,
+            "top5_bert": top_bert,
+        })
 
-print(f"\n  [5] Ready to use:")
-print(f"      retrieve_similar_cases(query_text, k=5, method='tfidf')")
-print(f"      retrieve_similar_cases(query_text, k=5, method='bert')")
-print(f"      retrieve_similar_cases_from_file(case_id, k=5, method='bert')")
+    with open(OUTPUT_QUERIES, "w", encoding="utf-8") as f:
+        json.dump(queries, f, ensure_ascii=False, indent=2)
 
-print("\n" + "="*70)
-print("Ready untuk Tahap 4!")
-print("="*70)
+    log(f"[QUERIES] {len(queries)} query tersimpan -> {OUTPUT_QUERIES}")
+    return queries
+
+
+# ----------------------------------------------------------------------------
+# MAIN
+# ----------------------------------------------------------------------------
+def main():
+    log("=== TAHAP 3: Case Retrieval ===")
+    log("Domain: Perdata - Perbuatan Melawan Hukum (PMH) | Pengadilan: PN Bandung")
+
+    # -- Load dataset --
+    if not os.path.exists(CASES_CSV):
+        log(f"[FATAL] {CASES_CSV} tidak ditemukan. Jalankan 02_representation.py dulu.")
+        return
+
+    df = pd.read_csv(CASES_CSV)
+    log(f"Total kasus dimuat: {len(df)}")
+
+    # -- Gabung text features untuk vectorization --
+    df["text_combined"] = (
+        df.get("ringkasan_fakta", "").fillna("") + " " +
+        df.get("argumen_hukum", "").fillna("") + " " +
+        df.get("pasal", "").fillna("") + " " +
+        df.get("amar_putusan", "").fillna("")
+    ).str.lower().str.strip()
+
+    # Label untuk klasifikasi (SVM & NB)
+    # FIX: gabungkan label langka agar tiap kelas punya >=2 anggota.
+    # (kelas 'gugur' hanya 1 dokumen -> stratified split gagal)
+    df["decision_type"] = df["decision_type"].fillna("lainnya").apply(normalize_decision_type)
+    le = LabelEncoder()
+    df["label_encoded"] = le.fit_transform(df["decision_type"])
+
+    # -- Splitting Data (80:20) --
+    # Guard tambahan: jika masih ada kelas <2 anggota, matikan stratify
+    from collections import Counter
+    label_counts = Counter(df["label_encoded"].tolist())
+    stratify_arg = df["label_encoded"] if min(label_counts.values()) >= 2 else None
+    if stratify_arg is None:
+        log("[WARN] Masih ada kelas <2 anggota; stratify dimatikan untuk split ini.")
+    idx_all = np.arange(len(df))
+    idx_train, idx_test = train_test_split(
+        idx_all, test_size=TEST_SIZE, random_state=RANDOM_STATE,
+        stratify=stratify_arg
+    )
+
+    df_train = df.iloc[idx_train].reset_index(drop=True)
+    df_test  = df.iloc[idx_test].reset_index(drop=True)
+
+    log(f"Split data -> train: {len(df_train)} | test: {len(df_test)}")
+    log(f"Distribusi label: {dict(df['decision_type'].value_counts())}")
+
+    # ── SIMPAN INDEKS (KRITIKAL untuk 04_predict.py) ────────────────────────
+    with open(f"{MODELS_DIR}/train_indices.json", "w") as f:
+        json.dump(idx_train.tolist(), f)
+    with open(f"{MODELS_DIR}/test_indices.json", "w") as f:
+        json.dump(idx_test.tolist(), f)
+
+    case_ids = df["case_id"].tolist()
+    with open(f"{MODELS_DIR}/case_ids.json", "w") as f:
+        json.dump(case_ids, f)
+
+    # Simpan label encoder
+    joblib.dump(le, f"{MODELS_DIR}/label_encoder.pkl")
+    log("[SAVED] train_indices.json, test_indices.json, case_ids.json, label_encoder.pkl")
+
+    # ════════════════════════════════════════════════════════════════════════
+    # MODEL 1: TF-IDF Vectorization
+    # ════════════════════════════════════════════════════════════════════════
+    log("\n--- TF-IDF Vectorization ---")
+    vectorizer = TfidfVectorizer(
+        max_features=10000,
+        ngram_range=(1, 2),
+        min_df=2,
+        sublinear_tf=True,
+        analyzer="word",
+    )
+    tfidf_all    = vectorizer.fit_transform(df["text_combined"])
+    tfidf_train  = tfidf_all[idx_train]
+    tfidf_test   = tfidf_all[idx_test]
+
+    joblib.dump(vectorizer, f"{MODELS_DIR}/tfidf_vectorizer.pkl")
+    log(f"TF-IDF matrix: {tfidf_all.shape} | vocab: {len(vectorizer.vocabulary_)}")
+
+    # ── MODEL 2: SVM pada TF-IDF ────────────────────────────────────────────
+    log("\n--- Model: SVM (LinearSVC) ---")
+    svm_model = LinearSVC(C=1.0, max_iter=2000, random_state=RANDOM_STATE)
+    svm_model.fit(tfidf_train, df_train["label_encoded"])
+    y_pred_svm = svm_model.predict(tfidf_test)
+    y_true      = df_test["label_encoded"].values
+
+    svm_metrics = {
+        "model": "TF-IDF + SVM",
+        "accuracy":  round(accuracy_score(y_true, y_pred_svm), 4),
+        "precision": round(precision_score(y_true, y_pred_svm,
+                           average="weighted", zero_division=0), 4),
+        "recall":    round(recall_score(y_true, y_pred_svm,
+                           average="weighted", zero_division=0), 4),
+        "f1_score":  round(f1_score(y_true, y_pred_svm,
+                           average="weighted", zero_division=0), 4),
+    }
+
+    joblib.dump(svm_model, f"{MODELS_DIR}/svm_model.pkl")
+    log(f"SVM Accuracy : {svm_metrics['accuracy']}")
+    log(f"SVM Precision: {svm_metrics['precision']}")
+    log(f"SVM Recall   : {svm_metrics['recall']}")
+    log(f"SVM F1-score : {svm_metrics['f1_score']}")
+    log("\nClassification Report (SVM):")
+    log(classification_report(y_true, y_pred_svm,
+                               target_names=le.classes_, zero_division=0))
+
+    # ── MODEL 3: Naive Bayes pada TF-IDF ────────────────────────────────────
+    log("\n--- Model: Naive Bayes (MultinomialNB) ---")
+    # NB butuh nilai non-negatif; MinMaxScaler di sparse matrix
+    scaler = MinMaxScaler()
+    tfidf_train_nn = scaler.fit_transform(tfidf_train.toarray())
+    tfidf_test_nn  = scaler.transform(tfidf_test.toarray())
+
+    nb_model = MultinomialNB(alpha=0.1)
+    nb_model.fit(tfidf_train_nn, df_train["label_encoded"])
+    y_pred_nb = nb_model.predict(tfidf_test_nn)
+
+    nb_metrics = {
+        "model": "TF-IDF + Naive Bayes",
+        "accuracy":  round(accuracy_score(y_true, y_pred_nb), 4),
+        "precision": round(precision_score(y_true, y_pred_nb,
+                           average="weighted", zero_division=0), 4),
+        "recall":    round(recall_score(y_true, y_pred_nb,
+                           average="weighted", zero_division=0), 4),
+        "f1_score":  round(f1_score(y_true, y_pred_nb,
+                           average="weighted", zero_division=0), 4),
+    }
+
+    joblib.dump(nb_model, f"{MODELS_DIR}/nb_model.pkl")
+    joblib.dump(scaler, f"{MODELS_DIR}/nb_scaler.pkl")
+    log(f"NB Accuracy : {nb_metrics['accuracy']}")
+    log(f"NB Precision: {nb_metrics['precision']}")
+    log(f"NB Recall   : {nb_metrics['recall']}")
+    log(f"NB F1-score : {nb_metrics['f1_score']}")
+    log("\nClassification Report (Naive Bayes):")
+    log(classification_report(y_true, y_pred_nb,
+                               target_names=le.classes_, zero_division=0))
+
+    # ── TF-IDF Cosine Similarity (retrieval) ────────────────────────────────
+    log("\n--- TF-IDF Cosine Similarity Retrieval ---")
+    labels_arr  = df["label_encoded"].values
+    sim_tfidf   = cosine_similarity(tfidf_all)
+    tfidf_ret   = evaluate_retrieval(idx_test, case_ids, labels_arr, sim_tfidf, k=TOP_K)
+
+    tfidf_retrieval_metrics = {"model": "TF-IDF + Cosine", **tfidf_ret}
+    log(f"TF-IDF Retrieval: {tfidf_ret}")
+
+    # ════════════════════════════════════════════════════════════════════════
+    # MODEL 4: BERT Embeddings
+    # ════════════════════════════════════════════��═══════════════════════════
+    bert_model       = None
+    bert_embeddings  = None
+    bert_metrics     = {"model": "BERT + Cosine", "precision@5": 0,
+                        "recall@5": 0, "f1@5": 0}
+
+    if BERT_AVAILABLE:
+        log(f"\n--- BERT Embeddings ({BERT_MODEL_NAME}) ---")
+        log("Encoding dokumen... (mungkin butuh beberapa menit)")
+        bert_model = SentenceTransformer(BERT_MODEL_NAME)
+        texts_to_encode = df["text_combined"].tolist()
+        bert_embeddings = bert_model.encode(
+            texts_to_encode,
+            batch_size=32,
+            show_progress_bar=True,
+            normalize_embeddings=True,
+        )
+        np.save(f"{MODELS_DIR}/bert_embeddings.npy", bert_embeddings)
+        log(f"BERT embeddings shape: {bert_embeddings.shape}")
+
+        sim_bert = cosine_similarity(bert_embeddings)
+        bert_ret = evaluate_retrieval(idx_test, case_ids, labels_arr, sim_bert, k=TOP_K)
+        bert_metrics = {"model": "BERT + Cosine", **bert_ret}
+        log(f"BERT Retrieval: {bert_ret}")
+    else:
+        log("\n[WARN] sentence-transformers tidak terinstall. Skip BERT.")
+        log("  Jalankan: pip install sentence-transformers")
+        np.save(f"{MODELS_DIR}/bert_embeddings.npy", np.array([]))
+
+    # ── Simpan perbandingan metrik semua model ───────────────────────────────
+    all_metrics = [svm_metrics, nb_metrics, tfidf_retrieval_metrics, bert_metrics]
+    df_metrics = pd.DataFrame(all_metrics)
+    df_metrics.to_csv(f"{EVAL_DIR}/retrieval_metrics.csv", index=False)
+    log(f"\n[SAVED] Perbandingan metrik -> {EVAL_DIR}/retrieval_metrics.csv")
+
+    # ── Tabel ringkasan ──────────────────────────────────────────────────────
+    log("\n=== RINGKASAN PERBANDINGAN MODEL ===")
+    log(f"{'Model':<30} {'Accuracy':>10} {'Precision':>10} {'Recall':>10} {'F1':>10}")
+    log("-" * 65)
+    for m in all_metrics:
+        acc  = m.get("accuracy", m.get(f"precision@{TOP_K}", "-"))
+        prec = m.get("precision", m.get(f"precision@{TOP_K}", "-"))
+        rec  = m.get("recall",  m.get(f"recall@{TOP_K}", "-"))
+        f1   = m.get("f1_score", m.get(f"f1@{TOP_K}", "-"))
+        log(f"{m['model']:<30} {str(acc):>10} {str(prec):>10} {str(rec):>10} {str(f1):>10}")
+
+    # ── Generate queries.json ────────────────────────────────────────────────
+    log(f"\n--- Membuat {OUTPUT_QUERIES} ---")
+    generate_queries_json(
+        df_test, case_ids, labels_arr,
+        tfidf_all, vectorizer,
+        bert_embeddings=bert_embeddings,
+        bert_model=bert_model,
+    )
+
+    log("\n=== TAHAP 3 SELESAI ===")
+    log(f"Model TF-IDF vectorizer -> {MODELS_DIR}/tfidf_vectorizer.pkl")
+    log(f"Model SVM               -> {MODELS_DIR}/svm_model.pkl")
+    log(f"Model Naive Bayes       -> {MODELS_DIR}/nb_model.pkl")
+    log(f"BERT embeddings         -> {MODELS_DIR}/bert_embeddings.npy")
+    log(f"Train indices           -> {MODELS_DIR}/train_indices.json  ← penting untuk 04_predict.py")
+    log(f"Queries uji             -> {OUTPUT_QUERIES}")
+    log(f"Metrik retrieval        -> {EVAL_DIR}/retrieval_metrics.csv")
+
+
+if __name__ == "__main__":
+    main()
