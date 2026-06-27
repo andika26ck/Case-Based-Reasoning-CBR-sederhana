@@ -1,0 +1,354 @@
+2026-06-27 16:39:52,021 | INFO | === TAHAP 5: Model Evaluation ===
+2026-06-27 16:39:52,021 | INFO | Domain: Perdata - Perbuatan Melawan Hukum (PMH) | Pengadilan: PN Bandung
+2026-06-27 16:39:52,026 | INFO | Dataset: 90 kasus
+2026-06-27 16:39:52,066 | INFO | 
+======================================================================
+2026-06-27 16:39:52,066 | INFO | A. EVALUASI KLASIFIKASI (SVM & Naive Bayes)
+2026-06-27 16:39:52,066 | INFO | ======================================================================
+2026-06-27 16:39:52,071 | INFO | 
+Model: SVM (LinearSVC)
+2026-06-27 16:39:52,071 | INFO |   Accuracy : 0.8889
+2026-06-27 16:39:52,071 | INFO |   Precision: 0.9060
+2026-06-27 16:39:52,074 | INFO |   Recall   : 0.8889
+2026-06-27 16:39:52,074 | INFO |   F1-score : 0.8796
+2026-06-27 16:39:52,077 | INFO | 
+              precision    recall  f1-score   support
+
+  dikabulkan       1.00      0.60      0.75         5
+     ditolak       0.85      1.00      0.92        11
+     lainnya       1.00      1.00      1.00         2
+
+    accuracy                           0.89        18
+   macro avg       0.95      0.87      0.89        18
+weighted avg       0.91      0.89      0.88        18
+
+2026-06-27 16:39:52,231 | INFO | 
+[SAVED] Confusion matrix -> data/eval/confusion_matrix.png
+2026-06-27 16:39:52,231 | INFO | 
+Model: Naive Bayes
+2026-06-27 16:39:52,231 | INFO |   Accuracy : 0.9444
+2026-06-27 16:39:52,231 | INFO |   Precision: 0.9491
+2026-06-27 16:39:52,231 | INFO |   Recall   : 0.9444
+2026-06-27 16:39:52,237 | INFO |   F1-score : 0.9426
+2026-06-27 16:39:52,237 | INFO | 
+              precision    recall  f1-score   support
+
+  dikabulkan       1.00      0.80      0.89         5
+     ditolak       0.92      1.00      0.96        11
+     lainnya       1.00      1.00      1.00         2
+
+    accuracy                           0.94        18
+   macro avg       0.97      0.93      0.95        18
+weighted avg       0.95      0.94      0.94        18
+
+2026-06-27 16:39:52,237 | INFO | 
+======================================================================
+2026-06-27 16:39:52,237 | INFO | B. EVALUASI RETRIEVAL (TF-IDF Cosine & BERT Cosine)
+2026-06-27 16:39:52,237 | INFO | ======================================================================
+2026-06-27 16:39:52,254 | INFO | 
+Model: TF-IDF + Cosine
+2026-06-27 16:39:52,254 | INFO |   Accuracy@5 : 1.0
+2026-06-27 16:39:52,254 | INFO |   Precision@5: 0.7444
+2026-06-27 16:39:52,254 | INFO |   Recall@5   : 0.108
+2026-06-27 16:39:52,254 | INFO |   F1@5       : 0.1775
+2026-06-27 16:39:52,256 | INFO | 
+Model: BERT + Cosine
+2026-06-27 16:39:52,256 | INFO |   Accuracy@5 : 0.8333
+2026-06-27 16:39:52,256 | INFO |   Precision@5: 0.6444
+2026-06-27 16:39:52,256 | INFO |   Recall@5   : 0.0827
+2026-06-27 16:39:52,256 | INFO |   F1@5       : 0.1409
+2026-06-27 16:39:52,256 | INFO | 
+======================================================================
+2026-06-27 16:39:52,256 | INFO | C. EVALUASI PREDIKSI SOLUSI (dari queries.json)
+2026-06-27 16:39:52,256 | INFO | ======================================================================
+2026-06-27 16:39:52,256 | INFO | 
+TF-IDF Retrieval: Hit Rate@5 = 1.0 (10/10 query)
+2026-06-27 16:39:52,256 | INFO | 
+BERT Retrieval: Hit Rate@5 = 0.9 (9/10 query)
+2026-06-27 16:39:52,258 | INFO | 
+[SAVED] Prediksi solusi -> data/eval/prediction_metrics.csv
+2026-06-27 16:39:52,258 | INFO | 
+======================================================================
+2026-06-27 16:39:52,258 | INFO | D. ANALISIS KEGAGALAN MODEL (Error Analysis)
+2026-06-27 16:39:52,259 | INFO | ======================================================================
+2026-06-27 16:39:52,259 | INFO | 
+Total kasus yang salah diprediksi (SVM): 2
+2026-06-27 16:39:52,259 | INFO | 
+Distribusi true label yang sering salah:
+2026-06-27 16:39:52,260 | INFO | true_label
+dikabulkan    2
+Name: count, dtype: int64
+2026-06-27 16:39:52,260 | INFO | 
+Distribusi pred label yang sering muncul sebagai kesalahan:
+2026-06-27 16:39:52,261 | INFO | pred_label_svm
+ditolak    2
+Name: count, dtype: int64
+2026-06-27 16:39:52,261 | INFO | 
+Rata-rata jumlah kata kasus yang gagal: 6819 kata
+2026-06-27 16:39:52,261 | INFO | 
+=== REKOMENDASI PERBAIKAN ===
+2026-06-27 16:39:52,262 | INFO | 
+1. AUGMENTASI DATA: Kelas minoritas (gugur, NOV) sangat sedikit sehingga model sulit belajar polanya. Coba over-sampling (SMOTE) atau tambah data dari pengadilan lain.
+2026-06-27 16:39:52,262 | INFO | 
+2. FEATURE ENGINEERING: Tambahkan fitur eksplisit dari pasal yang dirujuk dan identitas pihak sebagai fitur kategoris (bukan hanya teks bebas).
+2026-06-27 16:39:52,262 | INFO | 
+3. FINE-TUNING BERT: Gunakan IndoBERT yang di-fine-tune pada dataset hukum Indonesia (indobenchmark/indobert-base-p1) untuk representasi yang lebih sesuai domain PMH.
+2026-06-27 16:39:52,262 | INFO | 
+4. THRESHOLD REJECTION: Implementasikan mekanisme 'rejection' — jika skor similarity tertinggi < threshold (misal 0.3), sistem menyatakan 'kasus baru tidak memiliki padanan yang cukup mirip' daripada memaksakan prediksi.
+2026-06-27 16:39:52,262 | INFO | 
+5. ENSEMBLE: Gabungkan prediksi TF-IDF+SVM dan BERT dengan weighted voting untuk meningkatkan robustness.
+2026-06-27 16:39:52,262 | INFO | 
+[SAVED] Error analysis -> data/eval/error_analysis.csv
+2026-06-27 16:39:52,263 | INFO | 
+======================================================================
+2026-06-27 16:39:52,263 | INFO | E. RINGKASAN PERBANDINGAN SEMUA MODEL
+2026-06-27 16:39:52,263 | INFO | ======================================================================
+2026-06-27 16:39:52,263 | INFO | 
+Model                            Accuracy  Precision     Recall         F1
+2026-06-27 16:39:52,263 | INFO | -----------------------------------------------------------------
+2026-06-27 16:39:52,263 | INFO | SVM (LinearSVC)                    0.8889      0.906     0.8889     0.8796
+2026-06-27 16:39:52,263 | INFO | Naive Bayes                        0.9444     0.9491     0.9444     0.9426
+2026-06-27 16:39:52,263 | INFO | TF-IDF + Cosine                       1.0     0.7444      0.108     0.1775
+2026-06-27 16:39:52,263 | INFO | BERT + Cosine                      0.8333     0.6444     0.0827     0.1409
+2026-06-27 16:39:52,264 | INFO | 
+[SAVED] Metrik lengkap -> data/eval/retrieval_metrics.csv
+2026-06-27 16:39:52,326 | INFO | [SAVED] Bar chart perbandingan -> data/eval/model_comparison.png
+2026-06-27 16:39:52,326 | INFO | 
+=== EVALUASI SELESAI ===
+2026-06-27 16:39:52,326 | INFO | Semua output tersimpan di folder: data/eval/
+2026-06-27 16:53:11,079 | INFO | === TAHAP 5: Model Evaluation ===
+2026-06-27 16:53:11,079 | INFO | Domain: Perdata - Perbuatan Melawan Hukum (PMH) | Pengadilan: PN Bandung
+2026-06-27 16:53:11,083 | INFO | Dataset: 90 kasus
+2026-06-27 16:53:11,125 | INFO | 
+======================================================================
+2026-06-27 16:53:11,125 | INFO | A. EVALUASI KLASIFIKASI (SVM & Naive Bayes)
+2026-06-27 16:53:11,125 | INFO | ======================================================================
+2026-06-27 16:53:11,130 | INFO | 
+Model: SVM (LinearSVC)
+2026-06-27 16:53:11,130 | INFO |   Accuracy : 0.8889
+2026-06-27 16:53:11,130 | INFO |   Precision: 0.9060
+2026-06-27 16:53:11,130 | INFO |   Recall   : 0.8889
+2026-06-27 16:53:11,133 | INFO |   F1-score : 0.8796
+2026-06-27 16:53:11,135 | INFO | 
+              precision    recall  f1-score   support
+
+  dikabulkan       1.00      0.60      0.75         5
+     ditolak       0.85      1.00      0.92        11
+     lainnya       1.00      1.00      1.00         2
+
+    accuracy                           0.89        18
+   macro avg       0.95      0.87      0.89        18
+weighted avg       0.91      0.89      0.88        18
+
+2026-06-27 16:53:11,237 | INFO | 
+[SAVED] Confusion matrix -> data/eval/confusion_matrix.png
+2026-06-27 16:53:11,239 | INFO | 
+Model: Naive Bayes
+2026-06-27 16:53:11,239 | INFO |   Accuracy : 0.9444
+2026-06-27 16:53:11,239 | INFO |   Precision: 0.9491
+2026-06-27 16:53:11,239 | INFO |   Recall   : 0.9444
+2026-06-27 16:53:11,239 | INFO |   F1-score : 0.9426
+2026-06-27 16:53:11,242 | INFO | 
+              precision    recall  f1-score   support
+
+  dikabulkan       1.00      0.80      0.89         5
+     ditolak       0.92      1.00      0.96        11
+     lainnya       1.00      1.00      1.00         2
+
+    accuracy                           0.94        18
+   macro avg       0.97      0.93      0.95        18
+weighted avg       0.95      0.94      0.94        18
+
+2026-06-27 16:53:11,269 | INFO | 
+======================================================================
+2026-06-27 16:53:11,281 | INFO | B. EVALUASI RETRIEVAL (TF-IDF Cosine & BERT Cosine)
+2026-06-27 16:53:11,283 | INFO | ======================================================================
+2026-06-27 16:53:11,298 | INFO | 
+Model: TF-IDF + Cosine
+2026-06-27 16:53:11,299 | INFO |   Accuracy@5 : 1.0
+2026-06-27 16:53:11,299 | INFO |   Precision@5: 0.7444
+2026-06-27 16:53:11,299 | INFO |   Recall@5   : 0.108
+2026-06-27 16:53:11,299 | INFO |   F1@5       : 0.1775
+2026-06-27 16:53:11,300 | INFO | 
+Model: BERT + Cosine
+2026-06-27 16:53:11,300 | INFO |   Accuracy@5 : 0.8333
+2026-06-27 16:53:11,300 | INFO |   Precision@5: 0.6444
+2026-06-27 16:53:11,300 | INFO |   Recall@5   : 0.0827
+2026-06-27 16:53:11,300 | INFO |   F1@5       : 0.1409
+2026-06-27 16:53:11,300 | INFO | 
+======================================================================
+2026-06-27 16:53:11,300 | INFO | C. EVALUASI PREDIKSI SOLUSI (dari queries.json)
+2026-06-27 16:53:11,300 | INFO | ======================================================================
+2026-06-27 16:53:11,302 | INFO | 
+TF-IDF Retrieval: Hit Rate@5 = 1.0 (10/10 query)
+2026-06-27 16:53:11,302 | INFO | 
+BERT Retrieval: Hit Rate@5 = 0.9 (9/10 query)
+2026-06-27 16:53:11,303 | INFO | 
+[SAVED] Prediksi solusi -> data/eval/prediction_metrics.csv
+2026-06-27 16:53:11,303 | INFO | 
+======================================================================
+2026-06-27 16:53:11,303 | INFO | D. ANALISIS KEGAGALAN MODEL (Error Analysis)
+2026-06-27 16:53:11,303 | INFO | ======================================================================
+2026-06-27 16:53:11,304 | INFO | 
+Total kasus yang salah diprediksi (SVM): 2
+2026-06-27 16:53:11,304 | INFO | 
+Distribusi true label yang sering salah:
+2026-06-27 16:53:11,305 | INFO | true_label
+dikabulkan    2
+Name: count, dtype: int64
+2026-06-27 16:53:11,305 | INFO | 
+Distribusi pred label yang sering muncul sebagai kesalahan:
+2026-06-27 16:53:11,305 | INFO | pred_label_svm
+ditolak    2
+Name: count, dtype: int64
+2026-06-27 16:53:11,305 | INFO | 
+Rata-rata jumlah kata kasus yang gagal: 6819 kata
+2026-06-27 16:53:11,305 | INFO | 
+=== REKOMENDASI PERBAIKAN ===
+2026-06-27 16:53:11,305 | INFO | 
+1. AUGMENTASI DATA: Kelas minoritas (gugur, NOV) sangat sedikit sehingga model sulit belajar polanya. Coba over-sampling (SMOTE) atau tambah data dari pengadilan lain.
+2026-06-27 16:53:11,305 | INFO | 
+2. FEATURE ENGINEERING: Tambahkan fitur eksplisit dari pasal yang dirujuk dan identitas pihak sebagai fitur kategoris (bukan hanya teks bebas).
+2026-06-27 16:53:11,305 | INFO | 
+3. FINE-TUNING BERT: Gunakan IndoBERT yang di-fine-tune pada dataset hukum Indonesia (indobenchmark/indobert-base-p1) untuk representasi yang lebih sesuai domain PMH.
+2026-06-27 16:53:11,305 | INFO | 
+4. THRESHOLD REJECTION: Implementasikan mekanisme 'rejection' — jika skor similarity tertinggi < threshold (misal 0.3), sistem menyatakan 'kasus baru tidak memiliki padanan yang cukup mirip' daripada memaksakan prediksi.
+2026-06-27 16:53:11,305 | INFO | 
+5. ENSEMBLE: Gabungkan prediksi TF-IDF+SVM dan BERT dengan weighted voting untuk meningkatkan robustness.
+2026-06-27 16:53:11,305 | INFO | 
+[SAVED] Error analysis -> data/eval/error_analysis.csv
+2026-06-27 16:53:11,305 | INFO | 
+======================================================================
+2026-06-27 16:53:11,305 | INFO | E. RINGKASAN PERBANDINGAN SEMUA MODEL
+2026-06-27 16:53:11,305 | INFO | ======================================================================
+2026-06-27 16:53:11,316 | INFO | 
+Model                            Accuracy  Precision     Recall         F1
+2026-06-27 16:53:11,317 | INFO | -----------------------------------------------------------------
+2026-06-27 16:53:11,317 | INFO | SVM (LinearSVC)                    0.8889      0.906     0.8889     0.8796
+2026-06-27 16:53:11,317 | INFO | Naive Bayes                        0.9444     0.9491     0.9444     0.9426
+2026-06-27 16:53:11,317 | INFO | TF-IDF + Cosine                       1.0     0.7444      0.108     0.1775
+2026-06-27 16:53:11,317 | INFO | BERT + Cosine                      0.8333     0.6444     0.0827     0.1409
+2026-06-27 16:53:11,318 | INFO | 
+[SAVED] Metrik lengkap -> data/eval/retrieval_metrics.csv
+2026-06-27 16:53:11,379 | INFO | [SAVED] Bar chart perbandingan -> data/eval/model_comparison.png
+2026-06-27 16:53:11,379 | INFO | 
+=== EVALUASI SELESAI ===
+2026-06-27 16:53:11,379 | INFO | Semua output tersimpan di folder: data/eval/
+2026-06-27 17:25:06,420 | INFO | === TAHAP 5: Model Evaluation ===
+2026-06-27 17:25:06,438 | INFO | Domain: Perdata - Perbuatan Melawan Hukum (PMH) | Pengadilan: PN Bandung
+2026-06-27 17:25:06,446 | INFO | Dataset: 90 kasus
+2026-06-27 17:25:06,480 | INFO | 
+======================================================================
+2026-06-27 17:25:06,480 | INFO | A. EVALUASI KLASIFIKASI (SVM & Naive Bayes)
+2026-06-27 17:25:06,480 | INFO | ======================================================================
+2026-06-27 17:25:06,492 | INFO | 
+Model: SVM (LinearSVC)
+2026-06-27 17:25:06,492 | INFO |   Accuracy : 0.8889
+2026-06-27 17:25:06,492 | INFO |   Precision: 0.9060
+2026-06-27 17:25:06,492 | INFO |   Recall   : 0.8889
+2026-06-27 17:25:06,492 | INFO |   F1-score : 0.8796
+2026-06-27 17:25:06,496 | INFO | 
+              precision    recall  f1-score   support
+
+  dikabulkan       1.00      0.60      0.75         5
+     ditolak       0.85      1.00      0.92        11
+     lainnya       1.00      1.00      1.00         2
+
+    accuracy                           0.89        18
+   macro avg       0.95      0.87      0.89        18
+weighted avg       0.91      0.89      0.88        18
+
+2026-06-27 17:25:06,610 | INFO | 
+[SAVED] Confusion matrix -> data/eval/confusion_matrix.png
+2026-06-27 17:25:06,610 | INFO | 
+Model: Naive Bayes
+2026-06-27 17:25:06,610 | INFO |   Accuracy : 0.9444
+2026-06-27 17:25:06,610 | INFO |   Precision: 0.9491
+2026-06-27 17:25:06,610 | INFO |   Recall   : 0.9444
+2026-06-27 17:25:06,610 | INFO |   F1-score : 0.9426
+2026-06-27 17:25:06,615 | INFO | 
+              precision    recall  f1-score   support
+
+  dikabulkan       1.00      0.80      0.89         5
+     ditolak       0.92      1.00      0.96        11
+     lainnya       1.00      1.00      1.00         2
+
+    accuracy                           0.94        18
+   macro avg       0.97      0.93      0.95        18
+weighted avg       0.95      0.94      0.94        18
+
+2026-06-27 17:25:06,615 | INFO | 
+======================================================================
+2026-06-27 17:25:06,615 | INFO | B. EVALUASI RETRIEVAL (TF-IDF Cosine & BERT Cosine)
+2026-06-27 17:25:06,615 | INFO | ======================================================================
+2026-06-27 17:25:06,632 | INFO | 
+Model: TF-IDF + Cosine
+2026-06-27 17:25:06,632 | INFO |   Accuracy@5 : 1.0
+2026-06-27 17:25:06,632 | INFO |   Precision@5: 0.7444
+2026-06-27 17:25:06,632 | INFO |   Recall@5   : 0.108
+2026-06-27 17:25:06,632 | INFO |   F1@5       : 0.1775
+2026-06-27 17:25:06,634 | INFO | 
+Model: BERT + Cosine
+2026-06-27 17:25:06,634 | INFO |   Accuracy@5 : 0.8333
+2026-06-27 17:25:06,634 | INFO |   Precision@5: 0.6444
+2026-06-27 17:25:06,634 | INFO |   Recall@5   : 0.0827
+2026-06-27 17:25:06,634 | INFO |   F1@5       : 0.1409
+2026-06-27 17:25:06,634 | INFO | 
+======================================================================
+2026-06-27 17:25:06,634 | INFO | C. EVALUASI PREDIKSI SOLUSI (dari queries.json)
+2026-06-27 17:25:06,634 | INFO | ======================================================================
+2026-06-27 17:25:06,634 | INFO | 
+TF-IDF Retrieval: Hit Rate@5 = 1.0 (10/10 query)
+2026-06-27 17:25:06,634 | INFO | 
+BERT Retrieval: Hit Rate@5 = 0.9 (9/10 query)
+2026-06-27 17:25:06,637 | INFO | 
+[SAVED] Prediksi solusi -> data/eval/prediction_metrics.csv
+2026-06-27 17:25:06,637 | INFO | 
+======================================================================
+2026-06-27 17:25:06,637 | INFO | D. ANALISIS KEGAGALAN MODEL (Error Analysis)
+2026-06-27 17:25:06,637 | INFO | ======================================================================
+2026-06-27 17:25:06,638 | INFO | 
+Total kasus yang salah diprediksi (SVM): 2
+2026-06-27 17:25:06,638 | INFO | 
+Distribusi true label yang sering salah:
+2026-06-27 17:25:06,640 | INFO | true_label
+dikabulkan    2
+Name: count, dtype: int64
+2026-06-27 17:25:06,640 | INFO | 
+Distribusi pred label yang sering muncul sebagai kesalahan:
+2026-06-27 17:25:06,640 | INFO | pred_label_svm
+ditolak    2
+Name: count, dtype: int64
+2026-06-27 17:25:06,640 | INFO | 
+Rata-rata jumlah kata kasus yang gagal: 6819 kata
+2026-06-27 17:25:06,641 | INFO | 
+=== REKOMENDASI PERBAIKAN ===
+2026-06-27 17:25:06,641 | INFO | 
+1. AUGMENTASI DATA: Kelas minoritas (gugur, NOV) sangat sedikit sehingga model sulit belajar polanya. Coba over-sampling (SMOTE) atau tambah data dari pengadilan lain.
+2026-06-27 17:25:06,641 | INFO | 
+2. FEATURE ENGINEERING: Tambahkan fitur eksplisit dari pasal yang dirujuk dan identitas pihak sebagai fitur kategoris (bukan hanya teks bebas).
+2026-06-27 17:25:06,641 | INFO | 
+3. FINE-TUNING BERT: Gunakan IndoBERT yang di-fine-tune pada dataset hukum Indonesia (indobenchmark/indobert-base-p1) untuk representasi yang lebih sesuai domain PMH.
+2026-06-27 17:25:06,641 | INFO | 
+4. THRESHOLD REJECTION: Implementasikan mekanisme 'rejection' — jika skor similarity tertinggi < threshold (misal 0.3), sistem menyatakan 'kasus baru tidak memiliki padanan yang cukup mirip' daripada memaksakan prediksi.
+2026-06-27 17:25:06,641 | INFO | 
+5. ENSEMBLE: Gabungkan prediksi TF-IDF+SVM dan BERT dengan weighted voting untuk meningkatkan robustness.
+2026-06-27 17:25:06,641 | INFO | 
+[SAVED] Error analysis -> data/eval/error_analysis.csv
+2026-06-27 17:25:06,641 | INFO | 
+======================================================================
+2026-06-27 17:25:06,641 | INFO | E. RINGKASAN PERBANDINGAN SEMUA MODEL
+2026-06-27 17:25:06,641 | INFO | ======================================================================
+2026-06-27 17:25:06,641 | INFO | 
+Model                            Accuracy  Precision     Recall         F1
+2026-06-27 17:25:06,641 | INFO | -----------------------------------------------------------------
+2026-06-27 17:25:06,641 | INFO | SVM (LinearSVC)                    0.8889      0.906     0.8889     0.8796
+2026-06-27 17:25:06,641 | INFO | Naive Bayes                        0.9444     0.9491     0.9444     0.9426
+2026-06-27 17:25:06,641 | INFO | TF-IDF + Cosine                       1.0     0.7444      0.108     0.1775
+2026-06-27 17:25:06,642 | INFO | BERT + Cosine                      0.8333     0.6444     0.0827     0.1409
+2026-06-27 17:25:06,642 | INFO | 
+[SAVED] Metrik lengkap -> data/eval/retrieval_metrics.csv
+2026-06-27 17:25:06,702 | INFO | [SAVED] Bar chart perbandingan -> data/eval/model_comparison.png
+2026-06-27 17:25:06,702 | INFO | 
+=== EVALUASI SELESAI ===
+2026-06-27 17:25:06,702 | INFO | Semua output tersimpan di folder: data/eval/
