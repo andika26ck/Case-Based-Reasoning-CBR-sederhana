@@ -1,32 +1,285 @@
 [
   {
-    "query_id": "q1",
-    "query_text": "tentang duduk perkara",
-    "ground_truth_case_id": "case_zaf1485a6314b13ca232313531343037",
-    "ground_truth_no_perkara": "474/Pdt.G/2025/PN Bdg"
+    "query_id": "q_case_zaf16892e9b030a",
+    "case_id": "case_zaf16892e9b030a699c9313531393232",
+    "no_perkara": "583/Pdt.G/2023/PN Bdg",
+    "decision_type": "ditolak",
+    "query_text": "bahwa penggugat dengan surat gugatan tanggal 08 desember 2023 yang diterima dan didaftarkan di kepaniteraan pengadilan negeri bandung pada tanggal 11 desember 2023 dalam register nomor 583/pdt.g/2023/pn bdg, telah mengajukan gugatan sebagai berikut: 1. bahwa penggugat herry jaya adalah merupakan nasabah debitur dari tergugat pt. bank central asia tbk cq. pt. bank central asia tbk kcu soekarno-hatta, beralamat di jalan soekarno-hatta no. 240, kel. kb.lega, kec. bojongloa kidul, kota bandung, jawa",
+    "ground_truth_case_id": "case_zaf16892e9b030a699c9313531393232",
+    "expected_similar_case_ids": [
+      "case_zaf12e680c683e6e8550313434363234",
+      "case_zaf16892ed62d94ca808313531393238",
+      "case_zaf1532ddf60be74990c303935333131",
+      "case_zaf11900c97f58de925d303930343139",
+      "case_zaf1532dc596e86a8911303935323237"
+    ],
+    "top5_tfidf": [
+      "case_zaf16892e9b030a699c9313531393232",
+      "case_zaf1656e90202ec89323313532313336",
+      "case_zaf15363b1126938a663313631383236",
+      "case_zaf108a69b5a497e9323313333383238",
+      "case_zaf13c87b3d23b6e8aab313430383136"
+    ],
+    "top5_bert": [
+      "case_zaf16892e9b030a699c9313531393232",
+      "case_zaf108a69b5a497e9323313333383238",
+      "case_zaf13c87b3d23b6e8aab313430383136",
+      "case_zaf16892eb987310848a313531393235",
+      "case_zaf1325a39967e46b1bf313531373331"
+    ]
   },
   {
-    "query_id": "q2",
-    "query_text": "tentang duduk perkara",
-    "ground_truth_case_id": "case_zaf13c87d4ba94fc8740313430393131",
-    "ground_truth_no_perkara": "443/Pdt.G/2025/PN Bdg"
+    "query_id": "q_case_zaf0fcc0aba0929",
+    "case_id": "case_zaf0fcc0aba09294b0dc313031343439",
+    "no_perkara": "558/Pdt.G/2025/PN Bdg",
+    "decision_type": "dikabulkan",
+    "query_text": "bahwa penggugat dengan surat gugatan tanggal 21 november 2025 yang diterima dan didaftarkan di kepaniteraan pengadilan negeri bandung kelas ia khusus pada tanggal 21 november 2025 dalam register nomor 558/pdt.g/2025/pn.bdg , telah mengajukan gugatan sebagai berikut: bahwa adapun yang menjadi dasar dan alasan diajukannya gugatan penggugat ini adalah sebagai berikut : 1. bahwa sebelumnya penggugat dengan tergugat mempunyai hubungan sebagai pasangan suami istri yang beralamat tinggal sama di rumah ",
+    "ground_truth_case_id": "case_zaf0fcc0aba09294b0dc313031343439",
+    "expected_similar_case_ids": [
+      "case_zaf0f050bdac6cdca152313432333231",
+      "case_zaf15fe6620535168f99313432343131",
+      "case_zaf16b8f3a5d0dae94b9313033303332",
+      "case_zaf1072b7662b7c28d19313632343237"
+    ],
+    "top5_tfidf": [
+      "case_zaf0fcc0aba09294b0dc313031343439",
+      "case_zaf154c6348086669d36313033363038",
+      "case_zaf154c63bec5916a3bd313033363231",
+      "case_zaf1491665e4748ab625313333393537",
+      "case_zaf11383620a98bc91c7303932343033"
+    ],
+    "top5_bert": [
+      "case_zaf0fcc0aba09294b0dc313031343439",
+      "case_zaf1656e90202ec89323313532313336",
+      "case_zaf0f054826bc48eb394313435303230",
+      "case_zaf149de32e3e69c8794313333303131",
+      "case_zaf13c87a6cc2ae297cb313430373534"
+    ]
   },
   {
-    "query_id": "q3",
-    "query_text": "tentang duduk perkara",
-    "ground_truth_case_id": "case_zaf1532dc596e86a8911303935323237",
-    "ground_truth_no_perkara": "359/Pdt.G/2025/PN Bdg"
+    "query_id": "q_case_zaf1532ddf60be7",
+    "case_id": "case_zaf1532ddf60be74990c303935333131",
+    "no_perkara": "535/Pdt.G/2025/PN Bdg",
+    "decision_type": "ditolak",
+    "query_text": "bahwa penggugat dengan surat gugatan tanggal 01 november 2025 yang diterima dan didaftarkan di kepaniteraan pengadilan negeri bandung pada tanggal 12 november 2025 dalam register nomor 353/pdt.g/2025/pn bdg, telah mengajukan gugatan sebagai berikut : 1. bahwa penggugat adalah warga negara indonesia yang berstatus sebagai aparatur sipil negara (asn), sehingga berdasarkan kedudukan hukumnya memiliki hak- hak konstitusional yang dijamin oleh pasal 28d ayat (1) uud 1945, yaitu hak atas pengakuan, ja",
+    "ground_truth_case_id": "case_zaf1532ddf60be74990c303935333131",
+    "expected_similar_case_ids": [
+      "case_zaf16892e9b030a699c9313531393232",
+      "case_zaf12e680c683e6e8550313434363234",
+      "case_zaf16892ed62d94ca808313531393238",
+      "case_zaf11900c97f58de925d303930343139",
+      "case_zaf1532dc596e86a8911303935323237"
+    ],
+    "top5_tfidf": [
+      "case_zaf1532ddf60be74990c303935333131",
+      "case_zaf12e680c683e6e8550313434363234",
+      "case_zaf1325a3bf70778b4f2313531373335",
+      "case_zaf12e6817dd1f1c9a42313434363433",
+      "case_zaf13c87493670868848313430353137"
+    ],
+    "top5_bert": [
+      "case_zaf1532ddf60be74990c303935333131",
+      "case_zaf0fcc0aba09294b0dc313031343439",
+      "case_zaf1656e90202ec89323313532313336",
+      "case_zaf148591ca372de8487313530343539",
+      "case_zaf0f02d72a50c62b287313031303433"
+    ]
   },
   {
-    "query_id": "q4",
-    "query_text": "tentang duduk perkara",
-    "ground_truth_case_id": "case_zaf13c87acdb82d4a390313430383034",
-    "ground_truth_no_perkara": "64/Pdt.G/2025/PN Bdg"
+    "query_id": "q_case_zaf16892ed62d94",
+    "case_id": "case_zaf16892ed62d94ca808313531393238",
+    "no_perkara": "449/Pdt.G/2022/PN Bdg",
+    "decision_type": "ditolak",
+    "query_text": "bahwa penggugat telah menggugat para tergugat dan turut tergugat berdasarkan surat gugatan tanggal 27 september 2022 yang didaftarkan di kepaniteraan pengadilan negeri bandung pada tanggal 3 oktober 2022 dibawah register nomor 449/pdt.g/2022/pn bdg, dengan dalil-dalil pada pokoknya adalah sebagai berikut : 1. bahwa gugatan ini kami ajukan berdasarkan pasal 1365 kuhperdata yang berbunyi : tiap perbuatan melanggar hukum, yang membawa kerugian kepada orang lain, mewajibkan orang yang karena salahny",
+    "ground_truth_case_id": "case_zaf16892ed62d94ca808313531393238",
+    "expected_similar_case_ids": [
+      "case_zaf16892e9b030a699c9313531393232",
+      "case_zaf12e680c683e6e8550313434363234",
+      "case_zaf1532ddf60be74990c303935333131",
+      "case_zaf11900c97f58de925d303930343139",
+      "case_zaf1532dc596e86a8911303935323237"
+    ],
+    "top5_tfidf": [
+      "case_zaf16892ed62d94ca808313531393238",
+      "case_zaf16892f52d3bea8154313531393431",
+      "case_zaf11900c97f58de925d303930343139",
+      "case_zaf11383620a98bc91c7303932343033",
+      "case_zaf154c62c42978c8965313033353534"
+    ],
+    "top5_bert": [
+      "case_zaf149de32e3e69c8794313333303131",
+      "case_zaf1656e90202ec89323313532313336",
+      "case_zaf10569f08bf6129b83313034363339",
+      "case_zaf10df5e7a6e428a621303734383432",
+      "case_zaf158cea579e1f8bb07313334363338"
+    ]
   },
   {
-    "query_id": "q5",
-    "query_text": "tentang duduk perkara",
-    "ground_truth_case_id": "case_zaf0f5d617c52288b46e313530303331",
-    "ground_truth_no_perkara": "235/Pdt.G/2025/PN Bdg"
+    "query_id": "q_case_zaf15fe66205351",
+    "case_id": "case_zaf15fe6620535168f99313432343131",
+    "no_perkara": "201/Pdt.G/2026/PN Bdg",
+    "decision_type": "dikabulkan",
+    "query_text": "bahwa penggugat dalam surat gugatan tanggal 7 april 2026 yang diterima dan didaftarkan di kepaniteraan pengadilan negeri bandung pada tanggal 8 april 2026 dalam register nomor 201/pdt.g/2026/pn bdg;",
+    "ground_truth_case_id": "case_zaf15fe6620535168f99313432343131",
+    "expected_similar_case_ids": [
+      "case_zaf0fcc0aba09294b0dc313031343439",
+      "case_zaf0f050bdac6cdca152313432333231",
+      "case_zaf16b8f3a5d0dae94b9313033303332",
+      "case_zaf1072b7662b7c28d19313632343237"
+    ],
+    "top5_tfidf": [
+      "case_zaf15fe6620535168f99313432343131",
+      "case_zaf14de4f03d89aa9e56313632383330",
+      "case_zaf154c62c42978c8965313033353534",
+      "case_zaf1483d89191d36840b313134373335",
+      "case_zaf1532dbbdd6f2ea579303935323131"
+    ],
+    "top5_bert": [
+      "case_zaf108a67b7c7b36afa1313333373335",
+      "case_zaf16892ef3903d6988d313531393331",
+      "case_zaf14de4f03d89aa9e56313632383330",
+      "case_zaf0f050bdac6cdca152313432333231",
+      "case_zaf15fe6620535168f99313432343131"
+    ]
+  },
+  {
+    "query_id": "q_case_zaf1325a39967e4",
+    "case_id": "case_zaf1325a39967e46b1bf313531373331",
+    "no_perkara": "472/Pdt.G/2025/PN Bdg",
+    "decision_type": "ditolak",
+    "query_text": "bahwa penggugat dengan surat gugatan tanggal 2 september 2025 yang diterima dan didaftarkan di kepaniteraan pengadilan negeri bandung pada tanggal 6 oktober 2025 dalam register nomor 472/pdt.g/2025/pn bdg, telah mengajukan gugatan sebagai berikut: 1. bahwa penggugat adalah debitur pt. mandiri utama finance cabang kota bandung. 2. bahwa tergugat adalah pt. mandiri utama finance sebagai kreditur. 3. bahwa penggugat mendapatkan fasilitas pembiayaan 2 (dua) unit kendaran mobil yang di fasilitasi ole",
+    "ground_truth_case_id": "case_zaf1325a39967e46b1bf313531373331",
+    "expected_similar_case_ids": [
+      "case_zaf16892e9b030a699c9313531393232",
+      "case_zaf12e680c683e6e8550313434363234",
+      "case_zaf16892ed62d94ca808313531393238",
+      "case_zaf1532ddf60be74990c303935333131",
+      "case_zaf11900c97f58de925d303930343139"
+    ],
+    "top5_tfidf": [
+      "case_zaf1325a39967e46b1bf313531373331",
+      "case_zaf10df5df9563b892e3303734383239",
+      "case_zaf108a6aba2af388ffc313333383536",
+      "case_zaf12e6848853f648421313434383035",
+      "case_zaf11383620a98bc91c7303932343033"
+    ],
+    "top5_bert": [
+      "case_zaf1325a39967e46b1bf313531373331",
+      "case_zaf13c87b3d23b6e8aab313430383136",
+      "case_zaf108a69b5a497e9323313333383238",
+      "case_zaf1120e60d46bc4a83d313235333538",
+      "case_zaf16892e9b030a699c9313531393232"
+    ]
+  },
+  {
+    "query_id": "q_case_zaf10d4f7ff7a17",
+    "case_id": "case_zaf10d4f7ff7a174b346313135373332",
+    "no_perkara": "345/Pdt.G/2025/PN Bdg",
+    "decision_type": "ditolak",
+    "query_text": "bahwa penggugat dengan surat gugatan tanggal 7 maret 2025 yang diterima dan didaftarkan di kepaniteraan pengadilan negeri bandung pada tanggal 4 agustus 2025 dalam register nomor 345/pdt.g/2025/pn bdg, telah mengajukan gugatan sebagai berikut: 1. bahwa klien kami berkontrak kredit dengan pt. bpr kredit mandiri indonesia di kab. bandung pada hari selasa 31 mei 2022,dengan menjaminkan sertivikat rumah milik nya dengan no 2. bahwa kusnawati (penggugat) menyepakati total pinjamannya sebesar rp 4.00.",
+    "ground_truth_case_id": "case_zaf10d4f7ff7a174b346313135373332",
+    "expected_similar_case_ids": [
+      "case_zaf16892e9b030a699c9313531393232",
+      "case_zaf12e680c683e6e8550313434363234",
+      "case_zaf16892ed62d94ca808313531393238",
+      "case_zaf1532ddf60be74990c303935333131",
+      "case_zaf11900c97f58de925d303930343139"
+    ],
+    "top5_tfidf": [
+      "case_zaf10d4f7ff7a174b346313135373332",
+      "case_zaf1325a39967e46b1bf313531373331",
+      "case_zaf1532dc596e86a8911303935323237",
+      "case_zaf12e6848853f648421313434383035",
+      "case_zaf116d0aa9174f29606313431343439"
+    ],
+    "top5_bert": [
+      "case_zaf10d4f7ff7a174b346313135373332",
+      "case_zaf1656e90202ec89323313532313336",
+      "case_zaf10569f08bf6129b83313034363339",
+      "case_zaf149de32e3e69c8794313333303131",
+      "case_zaf0fcc0aba09294b0dc313031343439"
+    ]
+  },
+  {
+    "query_id": "q_case_zaf154c65c12b28",
+    "case_id": "case_zaf154c65c12b28a9b5e313033373135",
+    "no_perkara": "37/Pdt.G/2026/PN Bdg",
+    "decision_type": "lainnya",
+    "query_text": "bahwa kuasa para penggugat dengan suratnya perihal pencabutan gugatan perkara secara tertulis tertanggal 12 mei 2026 yang ditujukan kepada majelis hakim, telah mengajukan pencabutan perkara perdata nomor 37/pdt.g/2026/pn bdg, dengan alasan telah terjadi kesepakatan dari hasil mediasi;",
+    "ground_truth_case_id": "case_zaf154c65c12b28a9b5e313033373135",
+    "expected_similar_case_ids": [
+      "case_zaf1000a06a83380b5a9313433373238"
+    ],
+    "top5_tfidf": [
+      "case_zaf154c65c12b28a9b5e313033373135",
+      "case_zaf14859297c9dfaa09b313530353231",
+      "case_zaf163e46ba42e9a9adb313632303133",
+      "case_zaf14de4f03d89aa9e56313632383330",
+      "case_zaf15fe6620535168f99313432343131"
+    ],
+    "top5_bert": [
+      "case_zaf154c65c12b28a9b5e313033373135",
+      "case_zaf14859297c9dfaa09b313530353231",
+      "case_zaf14de4f03d89aa9e56313632383330",
+      "case_zaf1072b7662b7c28d19313632343237",
+      "case_zaf1483d89191d36840b313134373335"
+    ]
+  },
+  {
+    "query_id": "q_case_zaf1656e90202ec",
+    "case_id": "case_zaf1656e90202ec89323313532313336",
+    "no_perkara": "575/Pdt.G/2025/PN Bdg",
+    "decision_type": "ditolak",
+    "query_text": "bahwa penggugat dengan surat gugatan tanggal 1 desember 2025 yang diterima dan didaftarkan di kepaniteraan pengadilan negeri bandung pada tanggal 8 desember 2025 dalam register nomor 575/pdt.g/2025/pn bdg, telah mengajukan gugatan sebagai berikut: 1. bahwa penggugat adalah merupakan ahli waris yang sah dari emed bin arnadi berdasarkan penetapan nomor 1010/pdt.p/2024/pa. badg tertanggal 11 november 2024 masehi yang dikeluarkan oleh pengadilan agama bandung; 2. bahwa semasa hidupnya emed bin arnad",
+    "ground_truth_case_id": "case_zaf1656e90202ec89323313532313336",
+    "expected_similar_case_ids": [
+      "case_zaf16892e9b030a699c9313531393232",
+      "case_zaf12e680c683e6e8550313434363234",
+      "case_zaf16892ed62d94ca808313531393238",
+      "case_zaf1532ddf60be74990c303935333131",
+      "case_zaf11900c97f58de925d303930343139"
+    ],
+    "top5_tfidf": [
+      "case_zaf1656e90202ec89323313532313336",
+      "case_zaf1558589094d0cbf27303932353434",
+      "case_zaf12e6817dd1f1c9a42313434363433",
+      "case_zaf158cea579e1f8bb07313334363338",
+      "case_zaf1535f6fc89c30b51e313534373538"
+    ],
+    "top5_bert": [
+      "case_zaf1656e90202ec89323313532313336",
+      "case_zaf149de32e3e69c8794313333303131",
+      "case_zaf0f050bdac6cdca152313432333231",
+      "case_zaf10569f08bf6129b83313034363339",
+      "case_zaf1485a5ffbba04a1fb313531343031"
+    ]
+  },
+  {
+    "query_id": "q_case_zaf0f050bdac6cd",
+    "case_id": "case_zaf0f050bdac6cdca152313432333231",
+    "no_perkara": "439/Pdt.G/2025/PN Bdg",
+    "decision_type": "dikabulkan",
+    "query_text": "bahwa penggugat dalam surat gugatan tanggal 26 agustus 2025 yang diterima dan didaftarkan di kepaniteraan pengadilan negeri bandung pada tanggal 22 september 2025 dalam register nomor 439/pdt.g/2025/pn bdg;",
+    "ground_truth_case_id": "case_zaf0f050bdac6cdca152313432333231",
+    "expected_similar_case_ids": [
+      "case_zaf0fcc0aba09294b0dc313031343439",
+      "case_zaf15fe6620535168f99313432343131",
+      "case_zaf16b8f3a5d0dae94b9313033303332",
+      "case_zaf1072b7662b7c28d19313632343237"
+    ],
+    "top5_tfidf": [
+      "case_zaf0f050bdac6cdca152313432333231",
+      "case_zaf0f1c34036c940bf04313033353334",
+      "case_zaf154c62c42978c8965313033353534",
+      "case_zaf16892ef3903d6988d313531393331",
+      "case_zaf12e685b0a410ca432313434383336"
+    ],
+    "top5_bert": [
+      "case_zaf0f050bdac6cdca152313432333231",
+      "case_zaf108a67b7c7b36afa1313333373335",
+      "case_zaf154c62c42978c8965313033353534",
+      "case_zaf16892ef3903d6988d313531393331",
+      "case_zaf14de4f03d89aa9e56313632383330"
+    ]
   }
 ]

@@ -1,0 +1,5 @@
+model,accuracy,precision,recall,f1,type
+SVM (LinearSVC),0.8889,0.906,0.8889,0.8796,classification
+Naive Bayes,0.9444,0.9491,0.9444,0.9426,classification
+TF-IDF + Cosine,1.0,0.7444,0.108,0.1775,retrieval
+BERT + Cosine,0.8333,0.6444,0.0827,0.1409,retrieval
